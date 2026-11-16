@@ -1,0 +1,16 @@
+{% extends "posts/base.html" %}
+{% block conteudo %}
+<h1>Promoções</h1>
+{% for p in promocoes %}
+  <div class="card">
+    <img src="{{ p.imagem.url }}" alt="{{ p.titulo }}">
+    <div>
+      <strong>{{ p.titulo }}</strong> <span class="tag">{{ p.get_status_display }}</span><br>
+      {{ p.comercio.nome }} · {{ p.comercio.cidade }}<br>
+      <small>{{ p.inicio|date:"d/m/Y H:i" }} até {{ p.fim|date:"d/m/Y H:i" }}</small>
+    </div>
+  </div>
+{% empty %}
+  <p>Nenhuma promoção ainda. <a href="{% url 'nova_promocao' %}">Cadastre a primeira</a>.</p>
+{% endfor %}
+{% endblock %}
