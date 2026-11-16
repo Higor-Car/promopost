@@ -10,26 +10,35 @@
     body { font-family: system-ui, sans-serif; margin: 0; background: var(--fundo); color: #1f2328; }
     header { background: #fff; border-bottom: 1px solid var(--borda); padding: 12px 16px; display: flex; gap: 16px; align-items: center; }
     header a { color: var(--cor); text-decoration: none; font-weight: 600; }
+    header form { margin-left: auto; }
     main { max-width: 860px; margin: 0 auto; padding: 16px; }
     .card { background: #fff; border: 1px solid var(--borda); border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; gap: 12px; }
     .card img { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; }
     .tag { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 12px; background: #ddf4ff; }
     .msg { background: #dafbe1; border: 1px solid #aceebb; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; }
+    .msg.warning { background: #fff8c5; border-color: #eac54f; }
     form p { display: flex; flex-direction: column; gap: 4px; }
     input, select, textarea { padding: 8px; border: 1px solid var(--borda); border-radius: 6px; font: inherit; }
     button, .btn { background: var(--cor); color: #fff; border: 0; padding: 10px 16px; border-radius: 6px; font: inherit; cursor: pointer; text-decoration: none; }
+    button.pequeno { padding: 6px 12px; font-size: 14px; margin-top: 6px; }
     .erro { color: #cf222e; font-size: 14px; }
   </style>
 </head>
 <body>
   <header>
     <strong>PromoPost</strong>
-    <a href="{% url 'lista_promocoes' %}">Promoções</a>
-    <a href="{% url 'nova_promocao' %}">Nova promoção</a>
-    <a href="{% url 'admin:index' %}">Admin</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'lista_promocoes' %}">Promoções</a>
+      <a href="{% url 'nova_promocao' %}">Nova promoção</a>
+      <a href="{% url 'admin:index' %}">Admin</a>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="pequeno">Sair</button>
+      </form>
+    {% endif %}
   </header>
   <main>
-    {% for m in messages %}<div class="msg">{{ m }}</div>{% endfor %}
+    {% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}
     {% block conteudo %}{% endblock %}
   </main>
 </body>

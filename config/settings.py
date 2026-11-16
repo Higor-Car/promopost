@@ -117,6 +117,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# Login: para onde mandar quem não está autenticado e depois de entrar/sair
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "lista_promocoes"
+LOGOUT_REDIRECT_URL = "login"
+
 # Imagens enviadas pelo painel (artes das promoções)
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"

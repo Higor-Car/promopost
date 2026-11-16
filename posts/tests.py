@@ -1,6 +1,7 @@
 import io
 from datetime import timedelta
 
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -20,6 +21,8 @@ def imagem_falsa():
 class PromocaoTests(TestCase):
     def setUp(self):
         self.comercio = Comercio.objects.create(nome="Mercado Teste")
+        usuario = get_user_model().objects.create_user("higor", password="senha-teste-123")
+        self.client.force_login(usuario)
 
     def test_lista_abre(self):
         resp = self.client.get(reverse("lista_promocoes"))
@@ -55,3 +58,18 @@ class PromocaoTests(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Promocao.objects.count(), 0)
+
+
+class LoginTests(TestCase):
+    def test_lista_exige_login(self):
+        resp = self.client.get(reverse("lista_promocoes"))
+        self.assertRedirects(resp, f"{reverse('login')}?next={reverse('lista_promocoes')}")
+
+    def test_nova_promocao_exige_login(self):
+        resp = self.client.get(reverse("nova_promocao"))
+        self.assertRedirects(resp, f"{reverse('login')}?next={reverse('nova_promocao')}")
+
+    def test_login_com_senha_correta(self):
+        get_user_model().objects.create_user("higor", password="senha-teste-123")
+        resp = self.client.post(reverse("login"), {"username": "higor", "password": "senha-teste-123"})
+        self.assertRedirects(resp, reverse("lista_promocoes"))
