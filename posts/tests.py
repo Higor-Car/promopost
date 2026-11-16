@@ -60,6 +60,51 @@ class PromocaoTests(TestCase):
         self.assertEqual(Promocao.objects.count(), 0)
 
 
+@override_settings(MEDIA_ROOT="/tmp/promopost_test_media")
+class AprovacaoTests(TestCase):
+    def setUp(self):
+        comercio = Comercio.objects.create(nome="Padaria Teste")
+        agora = timezone.now()
+        self.promocao = Promocao.objects.create(
+            comercio=comercio,
+            titulo="Pão a R$ 0,50",
+            imagem=imagem_falsa(),
+            inicio=agora + timedelta(hours=1),
+            fim=agora + timedelta(days=1),
+        )
+        self.url = reverse("aprovar_promocao", args=[self.promocao.pk])
+        self.usuario = get_user_model().objects.create_user("higor", password="senha-teste-123")
+
+    def test_aprova_rascunho(self):
+        self.client.force_login(self.usuario)
+        resp = self.client.post(self.url)
+        self.assertRedirects(resp, reverse("lista_promocoes"))
+        self.promocao.refresh_from_db()
+        self.assertEqual(self.promocao.status, Promocao.Status.APROVADA)
+
+    def test_get_nao_aprova(self):
+        self.client.force_login(self.usuario)
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 405)
+        self.promocao.refresh_from_db()
+        self.assertEqual(self.promocao.status, Promocao.Status.RASCUNHO)
+
+    def test_nao_reaprova_promocao_publicada(self):
+        self.promocao.status = Promocao.Status.PUBLICADA
+        self.promocao.save()
+        self.client.force_login(self.usuario)
+        self.client.post(self.url)
+        self.promocao.refresh_from_db()
+        self.assertEqual(self.promocao.status, Promocao.Status.PUBLICADA)
+
+    def test_exige_login(self):
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(reverse("login"), resp.url)
+        self.promocao.refresh_from_db()
+        self.assertEqual(self.promocao.status, Promocao.Status.RASCUNHO)
+
+
 class LoginTests(TestCase):
     def test_lista_exige_login(self):
         resp = self.client.get(reverse("lista_promocoes"))

@@ -8,6 +8,12 @@
       <strong>{{ p.titulo }}</strong> <span class="tag">{{ p.get_status_display }}</span><br>
       {{ p.comercio.nome }} · {{ p.comercio.cidade }}<br>
       <small>{{ p.inicio|date:"d/m/Y H:i" }} até {{ p.fim|date:"d/m/Y H:i" }}</small>
+      {% if p.status == "rascunho" or p.status == "aguardando" %}
+        <form method="post" action="{% url 'aprovar_promocao' p.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="pequeno">Aprovar</button>
+        </form>
+      {% endif %}
     </div>
   </div>
 {% empty %}
