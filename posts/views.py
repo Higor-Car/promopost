@@ -1,15 +1,17 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from .agendamento import AgendamentoError, agendar_promocao, desagendar_promocao
 from .forms import PromocaoForm
 from .models import Promocao
 
 
 @login_required
 def lista_promocoes(request):
-    promocoes = Promocao.objects.select_related("comercio")
+    promocoes = Promocao.objects.select_related("comercio").prefetch_related("postagens")
     return render(request, "posts/lista.html", {"promocoes": promocoes})
 
 
@@ -30,18 +32,19 @@ def nova_promocao(request):
 def editar_promocao(request, pk):
     promocao = get_object_or_404(Promocao, pk=pk)
     if not promocao.pode_editar:
-        messages.warning(request, "Promoção agendada, publicada ou encerrada não pode mais ser editada.")
+        messages.warning(request, "Promoção publicada ou encerrada não pode mais ser editada.")
         return redirect("lista_promocoes")
 
     if request.method == "POST":
         imagem_antiga = promocao.imagem.name
-        estava_aprovada = promocao.status == Promocao.Status.APROVADA
+        estava_aprovada = promocao.status in (Promocao.Status.APROVADA, Promocao.Status.AGENDADA)
         form = PromocaoForm(request.POST, request.FILES, instance=promocao)
         if form.is_valid():
             promocao = form.save(commit=False)
             if estava_aprovada and form.has_changed():
-                # Mudou o conteúdo: precisa ser aprovada de novo.
+                # Mudou o conteúdo: cancela o agendamento e precisa ser aprovada de novo.
                 promocao.status = Promocao.Status.RASCUNHO
+                desagendar_promocao(promocao)
             promocao.save()
             if promocao.imagem.name != imagem_antiga:
                 promocao.imagem.storage.delete(imagem_antiga)
@@ -81,9 +84,16 @@ def excluir_promocao(request, pk):
 def aprovar_promocao(request, pk):
     promocao = get_object_or_404(Promocao, pk=pk)
     if promocao.pode_aprovar:
-        promocao.status = Promocao.Status.APROVADA
-        promocao.save(update_fields=["status"])
-        messages.success(request, f"Promoção '{promocao.titulo}' aprovada!")
+        try:
+            agendar_promocao(promocao)
+        except AgendamentoError as erro:
+            messages.warning(request, str(erro))
+        else:
+            quando = timezone.localtime(promocao.postagens.first().agendada_para)
+            messages.success(
+                request,
+                f"Promoção '{promocao.titulo}' aprovada e agendada para {quando:%d/%m/%Y às %H:%M}.",
+            )
     else:
         messages.warning(request, "Só dá para aprovar promoções em rascunho ou aguardando aprovação.")
     return redirect("lista_promocoes")

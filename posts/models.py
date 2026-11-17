@@ -56,14 +56,20 @@ class Promocao(models.Model):
         return self.status in (self.Status.RASCUNHO, self.Status.AGUARDANDO)
 
     @property
+    def tem_postagem_publicada(self):
+        # Usa .all() para aproveitar prefetch_related("postagens") da lista.
+        return any(p.status == Postagem.Status.PUBLICADA for p in self.postagens.all())
+
+    @property
     def pode_editar(self):
-        # Depois de agendada, as postagens já existem; editar deixaria tudo fora de sincronia.
-        return self.status in (self.Status.RASCUNHO, self.Status.AGUARDANDO, self.Status.APROVADA)
+        # Depois que algo foi ao ar, a promoção não muda mais.
+        editaveis = (self.Status.RASCUNHO, self.Status.AGUARDANDO, self.Status.APROVADA, self.Status.AGENDADA)
+        return self.status in editaveis and not self.tem_postagem_publicada
 
     @property
     def pode_excluir(self):
-        # Promoção publicada fica como histórico do que foi ao ar.
-        return self.status != self.Status.PUBLICADA
+        # O que já foi publicado fica como histórico.
+        return self.status != self.Status.PUBLICADA and not self.tem_postagem_publicada
 
 
 class Postagem(models.Model):
@@ -88,6 +94,9 @@ class Postagem(models.Model):
     class Meta:
         ordering = ["agendada_para"]
         verbose_name_plural = "postagens"
+        constraints = [
+            models.UniqueConstraint(fields=["promocao", "rede"], name="uma_postagem_por_rede"),
+        ]
 
     def __str__(self):
         return f"{self.get_rede_display()} - {self.promocao.titulo}"

@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 from PIL import Image
 
-from .models import Comercio, Promocao
+from .models import Comercio, Postagem, Promocao
 
 
 def imagem_falsa():
@@ -76,12 +76,43 @@ class AprovacaoTests(TestCase):
         self.url = reverse("aprovar_promocao", args=[self.promocao.pk])
         self.usuario = get_user_model().objects.create_user("higor", password="senha-teste-123")
 
-    def test_aprova_rascunho(self):
+    def test_aprova_rascunho_e_agenda_postagens(self):
         self.client.force_login(self.usuario)
         resp = self.client.post(self.url)
         self.assertRedirects(resp, reverse("lista_promocoes"))
         self.promocao.refresh_from_db()
-        self.assertEqual(self.promocao.status, Promocao.Status.APROVADA)
+        self.assertEqual(self.promocao.status, Promocao.Status.AGENDADA)
+        postagens = self.promocao.postagens.all()
+        self.assertEqual(sorted(p.rede for p in postagens), ["facebook", "instagram"])
+        for postagem in postagens:
+            self.assertEqual(postagem.agendada_para, self.promocao.inicio)
+            self.assertEqual(postagem.status, Postagem.Status.PENDENTE)
+
+    def test_inicio_no_passado_agenda_para_agora(self):
+        self.promocao.inicio = timezone.now() - timedelta(hours=3)
+        self.promocao.save()
+        self.client.force_login(self.usuario)
+        antes = timezone.now()
+        self.client.post(self.url)
+        for postagem in self.promocao.postagens.all():
+            self.assertGreaterEqual(postagem.agendada_para, antes)
+
+    def test_nao_aprova_promocao_que_ja_terminou(self):
+        self.promocao.inicio = timezone.now() - timedelta(days=3)
+        self.promocao.fim = timezone.now() - timedelta(days=1)
+        self.promocao.save()
+        self.client.force_login(self.usuario)
+        self.client.post(self.url)
+        self.promocao.refresh_from_db()
+        self.assertEqual(self.promocao.status, Promocao.Status.RASCUNHO)
+        self.assertFalse(self.promocao.postagens.exists())
+
+    def test_agendar_duas_vezes_nao_duplica(self):
+        from .agendamento import agendar_promocao
+
+        agendar_promocao(self.promocao)
+        agendar_promocao(self.promocao)
+        self.assertEqual(self.promocao.postagens.count(), 2)
 
     def test_get_nao_aprova(self):
         self.client.force_login(self.usuario)
@@ -191,8 +222,28 @@ class EdicaoExclusaoTests(TestCase):
         self.promocao.refresh_from_db()
         self.assertEqual(self.promocao.status, Promocao.Status.APROVADA)
 
-    def test_nao_edita_agendada(self):
-        self.mudar_status(Promocao.Status.AGENDADA)
+    def test_editar_agendada_cancela_agendamento(self):
+        from .agendamento import agendar_promocao
+
+        agendar_promocao(self.promocao)
+        self.client.post(self.editar, self.dados(titulo="Picanha R$ 49,90"))
+        self.promocao.refresh_from_db()
+        self.assertEqual(self.promocao.status, Promocao.Status.RASCUNHO)
+        self.assertFalse(self.promocao.postagens.exists())
+
+    def test_nao_edita_nem_exclui_com_postagem_publicada(self):
+        from .agendamento import agendar_promocao
+
+        agendar_promocao(self.promocao)
+        self.promocao.postagens.filter(rede="instagram").update(status=Postagem.Status.PUBLICADA)
+        resp = self.client.post(self.editar, self.dados(titulo="Hackeado"))
+        self.assertRedirects(resp, reverse("lista_promocoes"))
+        self.client.post(self.excluir)
+        self.promocao.refresh_from_db()
+        self.assertEqual(self.promocao.titulo, "Picanha em oferta")
+
+    def test_nao_edita_encerrada(self):
+        self.mudar_status(Promocao.Status.ENCERRADA)
         resp = self.client.post(self.editar, self.dados(titulo="Hackeado"))
         self.assertRedirects(resp, reverse("lista_promocoes"))
         self.promocao.refresh_from_db()
