@@ -415,3 +415,66 @@ class AgendadorTests(TestCase):
         saida = io.StringIO()
         call_command("processar_agendamentos", stdout=saida)
         self.assertIn("na hora de postar", saida.getvalue())
+
+
+@override_settings(MEDIA_ROOT="/tmp/promopost_test_media")
+class CalendarioTests(TestCase):
+    def setUp(self):
+        from .agendamento import agendar_promocao
+
+        comercio = Comercio.objects.create(nome="Loja Teste", instagram="@lojateste")
+        agora = timezone.now()
+        self.passada = Promocao.objects.create(
+            comercio=comercio, titulo="Já começou", legenda="Corre que acaba!", imagem=imagem_falsa(),
+            inicio=agora - timedelta(hours=1), fim=agora + timedelta(days=1),
+        )
+        self.futura = Promocao.objects.create(
+            comercio=comercio, titulo="Mês que vem", imagem=imagem_falsa(),
+            inicio=agora + timedelta(days=40), fim=agora + timedelta(days=45),
+        )
+        agendar_promocao(self.passada)
+        agendar_promocao(self.futura)
+        self.usuario = get_user_model().objects.create_user("higor", password="senha-teste-123")
+        self.client.force_login(self.usuario)
+        self.url = reverse("calendario")
+
+    def test_mostra_hora_de_postar_com_legenda_e_botao(self):
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "Hora de postar (2)")
+        self.assertContains(resp, "Corre que acaba!")
+        self.assertContains(resp, "@lojateste")
+        for postagem in self.passada.postagens.all():
+            self.assertContains(resp, reverse("marcar_publicada", args=[postagem.pk]))
+
+    def test_mes_atual_nao_mostra_postagem_do_mes_seguinte(self):
+        resp = self.client.get(self.url)
+        self.assertNotContains(resp, "Mês que vem")
+
+    def test_navega_para_o_mes_da_postagem(self):
+        mes = timezone.localtime(self.futura.inicio).strftime("%Y-%m")
+        resp = self.client.get(self.url, {"mes": mes})
+        self.assertContains(resp, "Mês que vem")
+
+    def test_mes_invalido_usa_mes_atual(self):
+        for mes in ("abc", "2026-13", "2026"):
+            resp = self.client.get(self.url, {"mes": mes})
+            self.assertEqual(resp.status_code, 200)
+
+    def test_virada_de_ano(self):
+        resp = self.client.get(self.url, {"mes": "2026-12"})
+        self.assertContains(resp, "?mes=2027-01")
+        self.assertContains(resp, "?mes=2026-11")
+
+    def test_marcar_publicada_volta_para_o_calendario(self):
+        postagem = self.passada.postagens.first()
+        resp = self.client.post(
+            reverse("marcar_publicada", args=[postagem.pk]), {"next": self.url}
+        )
+        self.assertRedirects(resp, self.url)
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "Hora de postar (1)")
+
+    def test_exige_login(self):
+        self.client.logout()
+        resp = self.client.get(self.url)
+        self.assertIn(reverse("login"), resp.url)

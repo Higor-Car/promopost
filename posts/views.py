@@ -1,3 +1,6 @@
+from datetime import datetime
+from itertools import groupby
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,6 +13,7 @@ from .agendamento import (
     agendar_promocao,
     desagendar_promocao,
     marcar_postagem_publicada,
+    postagens_na_hora,
 )
 from .forms import PromocaoForm
 from .models import Postagem, Promocao
@@ -121,3 +125,55 @@ def marcar_publicada(request, pk):
     if url_has_allowed_host_and_scheme(proxima, allowed_hosts={request.get_host()}):
         return redirect(proxima)
     return redirect("lista_promocoes")
+
+
+def _mes_pedido(request):
+    """Lê ?mes=AAAA-MM; se vier vazio ou inválido, usa o mês atual."""
+    try:
+        ano, mes = (int(x) for x in request.GET.get("mes", "").split("-"))
+        return datetime(ano, mes, 1).date()
+    except (TypeError, ValueError):
+        return timezone.localdate().replace(day=1)
+
+
+def _somar_mes(dia, n):
+    total = dia.year * 12 + dia.month - 1 + n
+    return dia.replace(year=total // 12, month=total % 12 + 1)
+
+
+@login_required
+def calendario(request):
+    inicio_mes = _mes_pedido(request)
+    fim_mes = _somar_mes(inicio_mes, 1)
+    tz = timezone.get_current_timezone()
+    postagens = (
+        Postagem.objects.filter(
+            agendada_para__gte=datetime.combine(inicio_mes, datetime.min.time(), tz),
+            agendada_para__lt=datetime.combine(fim_mes, datetime.min.time(), tz),
+        )
+        .select_related("promocao__comercio")
+        .order_by("agendada_para", "rede")
+    )
+    agora = timezone.now()
+    for postagem in postagens:
+        postagem.na_hora = (
+            postagem.status == Postagem.Status.PENDENTE
+            and postagem.agendada_para <= agora
+            and postagem.promocao.status == Promocao.Status.AGENDADA
+        )
+    dias = [
+        (dia, list(itens))
+        for dia, itens in groupby(postagens, key=lambda p: timezone.localdate(p.agendada_para))
+    ]
+    return render(
+        request,
+        "posts/calendario.html",
+        {
+            "na_hora": postagens_na_hora(agora),
+            "dias": dias,
+            "inicio_mes": inicio_mes,
+            "mes_anterior": _somar_mes(inicio_mes, -1),
+            "mes_seguinte": fim_mes,
+            "hoje": timezone.localdate(),
+        },
+    )

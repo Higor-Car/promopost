@@ -26,6 +26,27 @@
     .acoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
     .acoes form { margin: 0; }
     .erro { color: #cf222e; font-size: 14px; }
+    .secao { background: #fff; border: 1px solid var(--borda); border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+    .secao.alerta { border-color: #eac54f; background: #fffbea; }
+    .secao h2 { margin: 0 0 8px; font-size: 18px; }
+    .meses { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .meses h1 { margin: 0; font-size: 22px; text-transform: capitalize; text-align: center; }
+    .dia { margin-bottom: 16px; }
+    .dia:last-child { margin-bottom: 0; }
+    .dia h3 { margin: 0 0 6px; font-size: 15px; text-transform: capitalize; }
+    .dia.hoje h3::after { content: " · hoje"; color: var(--cor); text-transform: none; }
+    .postagem { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--borda); }
+    .postagem:first-of-type { border-top: 0; }
+    .postagem img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+    .postagem .hora { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 44px; }
+    .postagem .info { flex: 1; min-width: 0; }
+    .tag.instagram { background: #fde2f3; }
+    .tag.facebook { background: #dbe7ff; }
+    .tag.publicada { background: #dafbe1; }
+    .tag.erro { background: #ffebe9; }
+    .tag.na-hora { background: #fff1b8; font-weight: 600; }
+    .legenda { width: 100%; margin-top: 6px; font-size: 14px; }
+    .vazio { color: #59636e; }
   </style>
 </head>
 <body>
@@ -34,6 +55,7 @@
     {% if user.is_authenticated %}
       <a href="{% url 'lista_promocoes' %}">Promoções</a>
       <a href="{% url 'nova_promocao' %}">Nova promoção</a>
+      <a href="{% url 'calendario' %}">Calendário</a>
       <a href="{% url 'admin:index' %}">Admin</a>
       <form method="post" action="{% url 'logout' %}">
         {% csrf_token %}

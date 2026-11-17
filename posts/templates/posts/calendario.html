@@ -1,0 +1,81 @@
+{% extends "posts/base.html" %}
+{% block titulo %}Calendário - PromoPost{% endblock %}
+{% block conteudo %}
+
+{% if na_hora %}
+<section class="secao alerta">
+  <h2>Hora de postar ({{ na_hora|length }})</h2>
+  <p class="vazio">Baixe a imagem, copie a legenda, poste na rede indicada e clique em "Marcar como publicada".</p>
+  {% for p in na_hora %}
+    <div class="postagem">
+      <img src="{{ p.promocao.imagem.url }}" alt="{{ p.promocao.titulo }}">
+      <div class="info">
+        <strong>{{ p.promocao.titulo }}</strong> <span class="tag {{ p.rede }}">{{ p.get_rede_display }}</span><br>
+        {{ p.promocao.comercio.nome }}{% if p.promocao.comercio.instagram %} · {{ p.promocao.comercio.instagram }}{% endif %}<br>
+        <small>Era para {{ p.agendada_para|date:"d/m/Y H:i" }}</small>
+        {% if p.promocao.legenda %}
+          <textarea class="legenda" rows="3" readonly>{{ p.promocao.legenda }}</textarea>
+        {% endif %}
+        <div class="acoes">
+          <a class="btn pequeno secundario" href="{{ p.promocao.imagem.url }}" download>Baixar imagem</a>
+          {% if p.promocao.legenda %}
+            <button type="button" class="btn pequeno secundario copiar">Copiar legenda</button>
+          {% endif %}
+          <form method="post" action="{% url 'marcar_publicada' p.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="pequeno">Marcar como publicada</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<div class="meses">
+  <a class="btn pequeno secundario" href="?mes={{ mes_anterior|date:'Y-m' }}">&larr; {{ mes_anterior|date:"M" }}</a>
+  <h1>{{ inicio_mes|date:"F \d\e Y" }}</h1>
+  <a class="btn pequeno secundario" href="?mes={{ mes_seguinte|date:'Y-m' }}">{{ mes_seguinte|date:"M" }} &rarr;</a>
+</div>
+
+<section class="secao">
+  {% for dia, postagens in dias %}
+    <div class="dia{% if dia == hoje %} hoje{% endif %}">
+      <h3>{{ dia|date:"l, d/m" }}</h3>
+      {% for p in postagens %}
+        <div class="postagem">
+          <span class="hora">{{ p.agendada_para|date:"H:i" }}</span>
+          <div class="info">
+            <strong>{{ p.promocao.titulo }}</strong> · {{ p.promocao.comercio.nome }}<br>
+            <span class="tag {{ p.rede }}">{{ p.get_rede_display }}</span>
+            {% if p.na_hora %}
+              <span class="tag na-hora">Hora de postar</span>
+            {% elif p.status == "publicada" %}
+              <span class="tag publicada">Publicada {{ p.publicada_em|date:"d/m H:i" }}</span>
+            {% elif p.status == "erro" %}
+              <span class="tag erro" title="{{ p.erro }}">Não publicada</span>
+            {% else %}
+              <span class="tag">Agendada</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% empty %}
+    <p class="vazio">Nenhuma postagem neste mês.</p>
+  {% endfor %}
+</section>
+
+<script>
+  document.querySelectorAll(".copiar").forEach(function (botao) {
+    botao.addEventListener("click", function () {
+      var texto = botao.closest(".info").querySelector(".legenda").value;
+      navigator.clipboard.writeText(texto).then(function () {
+        botao.textContent = "Copiada!";
+        setTimeout(function () { botao.textContent = "Copiar legenda"; }, 2000);
+      });
+    });
+  });
+</script>
+{% endblock %}
