@@ -58,6 +58,7 @@ class PromocaoTests(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Promocao.objects.count(), 0)
+        self.assertContains(resp, "O fim da promoção precisa ser depois do início.", count=1)
 
 
 @override_settings(MEDIA_ROOT="/tmp/promopost_test_media")
