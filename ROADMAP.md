@@ -11,8 +11,8 @@ Sistema para agendar e publicar promoções de comércios de Maurilândia e Turv
 - [x] Testes de criação e validação
 - [x] Login (telas protegidas com login_required)
 - [x] Botão de aprovar promoção (rascunho -> aprovada)
-- [ ] Editar e excluir promoção
-- [ ] README com instruções de uso
+- [x] Editar e excluir promoção
+- [x] README com instruções de uso
 
 ## Fase 2 - Agendador
 - [ ] Job que cria as `Postagem` quando a promoção é aprovada
