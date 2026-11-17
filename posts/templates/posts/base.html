@@ -30,11 +30,12 @@
     .secao.alerta { border-color: #eac54f; background: #fffbea; }
     .secao h2 { margin: 0 0 8px; font-size: 18px; }
     .meses { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; }
-    .meses h1 { margin: 0; font-size: 22px; text-transform: capitalize; text-align: center; }
+    .meses h1 { margin: 0; font-size: 22px; text-align: center; }
+    .meses .btn { white-space: nowrap; }
     .dia { margin-bottom: 16px; }
     .dia:last-child { margin-bottom: 0; }
-    .dia h3 { margin: 0 0 6px; font-size: 15px; text-transform: capitalize; }
-    .dia.hoje h3::after { content: " · hoje"; color: var(--cor); text-transform: none; }
+    .dia h3 { margin: 0 0 6px; font-size: 15px; }
+    .dia.hoje h3::after { content: " · hoje"; color: var(--cor); }
     .postagem { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--borda); }
     .postagem:first-of-type { border-top: 0; }
     .postagem img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }

@@ -35,14 +35,14 @@
 
 <div class="meses">
   <a class="btn pequeno secundario" href="?mes={{ mes_anterior|date:'Y-m' }}">&larr; {{ mes_anterior|date:"M" }}</a>
-  <h1>{{ inicio_mes|date:"F \d\e Y" }}</h1>
+  <h1>{{ inicio_mes|date:"F \d\e Y"|capfirst }}</h1>
   <a class="btn pequeno secundario" href="?mes={{ mes_seguinte|date:'Y-m' }}">{{ mes_seguinte|date:"M" }} &rarr;</a>
 </div>
 
 <section class="secao">
   {% for dia, postagens in dias %}
     <div class="dia{% if dia == hoje %} hoje{% endif %}">
-      <h3>{{ dia|date:"l, d/m" }}</h3>
+      <h3>{{ dia|date:"l, d/m"|capfirst }}</h3>
       {% for p in postagens %}
         <div class="postagem">
           <span class="hora">{{ p.agendada_para|date:"H:i" }}</span>
