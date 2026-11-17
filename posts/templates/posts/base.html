@@ -20,7 +20,11 @@
     form p { display: flex; flex-direction: column; gap: 4px; }
     input, select, textarea { padding: 8px; border: 1px solid var(--borda); border-radius: 6px; font: inherit; }
     button, .btn { background: var(--cor); color: #fff; border: 0; padding: 10px 16px; border-radius: 6px; font: inherit; cursor: pointer; text-decoration: none; }
-    button.pequeno { padding: 6px 12px; font-size: 14px; margin-top: 6px; }
+    button.pequeno, .btn.pequeno { padding: 6px 12px; font-size: 14px; }
+    .btn.secundario { background: #fff; color: var(--cor); border: 1px solid var(--borda); }
+    .btn.perigo, button.perigo { background: #cf222e; }
+    .acoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+    .acoes form { margin: 0; }
     .erro { color: #cf222e; font-size: 14px; }
   </style>
 </head>

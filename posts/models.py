@@ -51,6 +51,20 @@ class Promocao(models.Model):
     def __str__(self):
         return f"{self.titulo} - {self.comercio.nome}"
 
+    @property
+    def pode_aprovar(self):
+        return self.status in (self.Status.RASCUNHO, self.Status.AGUARDANDO)
+
+    @property
+    def pode_editar(self):
+        # Depois de agendada, as postagens já existem; editar deixaria tudo fora de sincronia.
+        return self.status in (self.Status.RASCUNHO, self.Status.AGUARDANDO, self.Status.APROVADA)
+
+    @property
+    def pode_excluir(self):
+        # Promoção publicada fica como histórico do que foi ao ar.
+        return self.status != self.Status.PUBLICADA
+
 
 class Postagem(models.Model):
     """Uma publicação concreta de uma promoção em uma rede social."""
