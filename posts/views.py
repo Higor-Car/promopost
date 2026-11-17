@@ -2,11 +2,17 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from .agendamento import AgendamentoError, agendar_promocao, desagendar_promocao
+from .agendamento import (
+    AgendamentoError,
+    agendar_promocao,
+    desagendar_promocao,
+    marcar_postagem_publicada,
+)
 from .forms import PromocaoForm
-from .models import Promocao
+from .models import Postagem, Promocao
 
 
 @login_required
@@ -96,4 +102,22 @@ def aprovar_promocao(request, pk):
             )
     else:
         messages.warning(request, "Só dá para aprovar promoções em rascunho ou aguardando aprovação.")
+    return redirect("lista_promocoes")
+
+
+@login_required
+@require_POST
+def marcar_publicada(request, pk):
+    postagem = get_object_or_404(Postagem.objects.select_related("promocao"), pk=pk)
+    try:
+        marcar_postagem_publicada(postagem)
+    except AgendamentoError as erro:
+        messages.warning(request, str(erro))
+    else:
+        messages.success(
+            request, f"{postagem.get_rede_display()} de '{postagem.promocao.titulo}' marcado como publicado."
+        )
+    proxima = request.POST.get("next", "")
+    if url_has_allowed_host_and_scheme(proxima, allowed_hosts={request.get_host()}):
+        return redirect(proxima)
     return redirect("lista_promocoes")

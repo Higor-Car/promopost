@@ -8,4 +8,5 @@ urlpatterns = [
     path("<int:pk>/editar/", views.editar_promocao, name="editar_promocao"),
     path("<int:pk>/excluir/", views.excluir_promocao, name="excluir_promocao"),
     path("<int:pk>/aprovar/", views.aprovar_promocao, name="aprovar_promocao"),
+    path("postagens/<int:pk>/publicada/", views.marcar_publicada, name="marcar_publicada"),
 ]

@@ -301,3 +301,117 @@ class LoginTests(TestCase):
         get_user_model().objects.create_user("higor", password="senha-teste-123")
         resp = self.client.post(reverse("login"), {"username": "higor", "password": "senha-teste-123"})
         self.assertRedirects(resp, reverse("lista_promocoes"))
+
+
+@override_settings(MEDIA_ROOT="/tmp/promopost_test_media")
+class AgendadorTests(TestCase):
+    def setUp(self):
+        from .agendamento import agendar_promocao
+
+        self.agora = timezone.now()
+        comercio = Comercio.objects.create(nome="Farmácia Teste")
+        self.promocao = Promocao.objects.create(
+            comercio=comercio,
+            titulo="Vitamina C",
+            imagem=imagem_falsa(),
+            inicio=self.agora + timedelta(hours=1),
+            fim=self.agora + timedelta(days=1),
+        )
+        agendar_promocao(self.promocao, self.agora)
+        self.instagram = self.promocao.postagens.get(rede="instagram")
+        self.facebook = self.promocao.postagens.get(rede="facebook")
+        self.usuario = get_user_model().objects.create_user("higor", password="senha-teste-123")
+
+    def processar(self, quando):
+        from .agendamento import processar
+
+        resultado = processar(quando)
+        self.promocao.refresh_from_db()
+        return resultado
+
+    def test_antes_do_horario_nada_na_hora(self):
+        resultado = self.processar(self.agora + timedelta(minutes=30))
+        self.assertEqual(resultado["na_hora"], 0)
+        self.assertEqual(self.promocao.status, Promocao.Status.AGENDADA)
+
+    def test_no_horario_postagens_ficam_na_hora(self):
+        resultado = self.processar(self.agora + timedelta(hours=2))
+        self.assertEqual(resultado["na_hora"], 2)
+
+    def test_encerra_no_fim_e_marca_erro_no_que_nao_saiu(self):
+        resultado = self.processar(self.agora + timedelta(days=2))
+        self.assertEqual(resultado["encerradas"], 1)
+        self.assertEqual(self.promocao.status, Promocao.Status.ENCERRADA)
+        for postagem in self.promocao.postagens.all():
+            self.assertEqual(postagem.status, Postagem.Status.ERRO)
+            self.assertIn("terminou", postagem.erro)
+
+    def test_encerra_rascunho_vencido(self):
+        rascunho = Promocao.objects.create(
+            comercio=self.promocao.comercio,
+            titulo="Esquecida",
+            imagem=imagem_falsa(),
+            inicio=self.agora - timedelta(days=3),
+            fim=self.agora - timedelta(days=1),
+        )
+        self.processar(self.agora)
+        rascunho.refresh_from_db()
+        self.assertEqual(rascunho.status, Promocao.Status.ENCERRADA)
+
+    def test_agenda_aprovada_pelo_admin(self):
+        aprovada = Promocao.objects.create(
+            comercio=self.promocao.comercio,
+            titulo="Aprovada no admin",
+            imagem=imagem_falsa(),
+            inicio=self.agora + timedelta(hours=1),
+            fim=self.agora + timedelta(days=1),
+            status=Promocao.Status.APROVADA,
+        )
+        resultado = self.processar(self.agora)
+        aprovada.refresh_from_db()
+        self.assertEqual(resultado["agendadas"], 1)
+        self.assertEqual(aprovada.status, Promocao.Status.AGENDADA)
+        self.assertEqual(aprovada.postagens.count(), 2)
+
+    def test_marcar_as_duas_redes_publica_a_promocao(self):
+        self.client.force_login(self.usuario)
+        self.client.post(reverse("marcar_publicada", args=[self.instagram.pk]))
+        self.promocao.refresh_from_db()
+        self.instagram.refresh_from_db()
+        self.assertEqual(self.instagram.status, Postagem.Status.PUBLICADA)
+        self.assertIsNotNone(self.instagram.publicada_em)
+        self.assertEqual(self.promocao.status, Promocao.Status.AGENDADA)  # falta o Facebook
+
+        self.client.post(reverse("marcar_publicada", args=[self.facebook.pk]))
+        self.promocao.refresh_from_db()
+        self.assertEqual(self.promocao.status, Promocao.Status.PUBLICADA)
+
+    def test_nao_marca_publicada_em_promocao_encerrada(self):
+        self.processar(self.agora + timedelta(days=2))
+        self.client.force_login(self.usuario)
+        self.client.post(reverse("marcar_publicada", args=[self.instagram.pk]))
+        self.instagram.refresh_from_db()
+        self.assertEqual(self.instagram.status, Postagem.Status.ERRO)
+
+    def test_marcar_publicada_exige_login_e_post(self):
+        url = reverse("marcar_publicada", args=[self.instagram.pk])
+        resp = self.client.post(url)
+        self.assertIn(reverse("login"), resp.url)
+        self.client.force_login(self.usuario)
+        self.assertEqual(self.client.get(url).status_code, 405)
+        self.instagram.refresh_from_db()
+        self.assertEqual(self.instagram.status, Postagem.Status.PENDENTE)
+
+    def test_next_externo_e_ignorado(self):
+        self.client.force_login(self.usuario)
+        resp = self.client.post(
+            reverse("marcar_publicada", args=[self.instagram.pk]), {"next": "https://site-malicioso.com/"}
+        )
+        self.assertRedirects(resp, reverse("lista_promocoes"))
+
+    def test_comando_roda(self):
+        from django.core.management import call_command
+
+        saida = io.StringIO()
+        call_command("processar_agendamentos", stdout=saida)
+        self.assertIn("na hora de postar", saida.getvalue())
