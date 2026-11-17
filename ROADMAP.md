@@ -15,10 +15,10 @@ Sistema para agendar e publicar promoções de comércios de Maurilândia e Turv
 - [x] README com instruções de uso
 
 ## Fase 2 - Agendador
-- [ ] Job que cria as `Postagem` quando a promoção é aprovada
-- [ ] Tarefa periódica (cron ou Celery) que muda o status no horário certo
-- [ ] Encerrar a promoção automaticamente no fim da data
-- [ ] Tela de calendário de postagens
+- [x] Job que cria as `Postagem` quando a promoção é aprovada
+- [x] Tarefa periódica (cron ou Celery) que muda o status no horário certo
+- [x] Encerrar a promoção automaticamente no fim da data
+- [x] Tela de calendário de postagens
 
 ## Fase 3 - Legenda com IA
 - [ ] Gerar legenda sugerida com a API do Claude a partir do título e do comércio

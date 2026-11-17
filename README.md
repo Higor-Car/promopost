@@ -49,13 +49,25 @@ Abra <http://127.0.0.1:8000/> no navegador e entre com o usuário criado acima.
    preencha título, legenda, imagem e as datas de início e fim.
    O fim precisa ser depois do início.
 3. **Aprovar** — na lista de **Promoções**, clique em **Aprovar** quando o
-   cliente der o ok. Só promoções em rascunho ou aguardando aprovação podem
-   ser aprovadas.
-4. **Editar** — disponível enquanto a promoção está em rascunho, aguardando ou
-   aprovada. Se você alterar uma promoção já aprovada, ela volta para
-   rascunho e precisa ser aprovada de novo.
-5. **Excluir** — pede confirmação e apaga a promoção junto com a imagem.
-   Promoções já publicadas não podem ser excluídas (ficam como histórico).
+   cliente der o ok. O sistema já agenda uma postagem no Instagram e outra no
+   Facebook para o horário de início (ou para agora, se o início já passou).
+   Promoção que já terminou não pode ser aprovada.
+4. **Postar** — abra o **Calendário**. No horário, a postagem aparece em
+   **Hora de postar**: baixe a imagem, copie a legenda, poste na rede indicada
+   e clique em **Marcar como publicada**. Quando Instagram e Facebook estiverem
+   marcados, a promoção vira *Publicada*. (Na Fase 4 isso será automático pela
+   API da Meta.)
+5. **Editar** — disponível até alguma postagem ser publicada. Se você alterar
+   uma promoção aprovada/agendada, o agendamento é cancelado e ela volta para
+   rascunho, precisando ser aprovada de novo.
+6. **Excluir** — pede confirmação e apaga a promoção junto com a imagem.
+   Depois que algo foi publicado não dá mais para excluir (fica no histórico).
+
+### Calendário
+
+Em **Calendário** ficam as postagens do mês, dia a dia, com o status de cada
+uma (Agendada, Hora de postar, Publicada ou Não publicada). Use as setas para
+trocar de mês.
 
 ### Status de uma promoção
 
@@ -63,10 +75,41 @@ Abra <http://127.0.0.1:8000/> no navegador e entre com o usuário criado acima.
 | --- | --- |
 | Rascunho | Cadastrada, ainda não revisada |
 | Aguardando aprovação do cliente | Enviada para o cliente conferir |
-| Aprovada | Cliente aprovou, pronta para agendar |
-| Agendada | Postagens criadas para Instagram/Facebook |
-| Publicada | Já foi ao ar |
-| Encerrada | Passou da data de fim |
+| Aprovada | Cliente aprovou (passa para Agendada na hora) |
+| Agendada | Postagens criadas para Instagram e Facebook |
+| Publicada | Foi ao ar nas duas redes |
+| Encerrada | Passou da data de fim (encerrada pelo agendador) |
+
+## Agendador
+
+O comando abaixo encerra as promoções que passaram do fim, agenda as que
+foram aprovadas pelo Admin e mostra quantas postagens estão na hora de
+publicar. Ele precisa rodar sozinho de tempos em tempos (recomendado: a cada
+5 minutos).
+
+```bash
+python manage.py processar_agendamentos
+```
+
+Para deixar rodando numa janela do terminal, repetindo a cada 5 minutos
+(feche com Ctrl+C):
+
+```bash
+python manage.py processar_agendamentos --a-cada 5
+```
+
+**Windows (Agendador de Tarefas)** — cria uma tarefa que roda a cada 5 minutos
+(ajuste o caminho da pasta do projeto):
+
+```bash
+schtasks /Create /SC MINUTE /MO 5 /TN "PromoPost agendador" /TR "C:\caminho\promopost\venv\Scripts\python.exe C:\caminho\promopost\manage.py processar_agendamentos"
+```
+
+**Linux (cron)** — adicione com `crontab -e`:
+
+```
+*/5 * * * * cd /caminho/promopost && venv/bin/python manage.py processar_agendamentos >> agendador.log 2>&1
+```
 
 ## Testes
 
@@ -78,6 +121,8 @@ python manage.py test posts
 
 - `config/` — configurações do Django (idioma pt-BR, fuso de São Paulo, login)
 - `posts/` — app principal: models `Comercio`, `Promocao` e `Postagem`,
-  telas de lista, formulário, aprovação, edição e exclusão
+  telas de lista, formulário, aprovação, edição, exclusão e calendário
+- `posts/agendamento.py` — regras de agendamento, publicação e encerramento
+- `posts/management/commands/processar_agendamentos.py` — o agendador
 - `media/` — imagens enviadas (não vai para o Git)
 - `db.sqlite3` — banco de dados local (não vai para o Git)
