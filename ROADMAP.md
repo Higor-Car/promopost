@@ -26,12 +26,17 @@ Fechar cerca de 10 comércios antes do lançamento público.
 - [x] QR codes para colar nos comércios parceiros
 
 ## Fase 4 — Métricas para os comércios
-- [ ] Contagem de visualizações e cliques por promoção e por comércio
-- [ ] Resumo simples para o dono do comércio ver o resultado
+- [x] Contagem de visualizações e cliques por promoção e por comércio
+- [x] Resumo simples para o dono do comércio ver o resultado
 
 ## Fase 5 — Instagram (@achoupromo)
-- [ ] Gerar a imagem "Promoções do dia" a partir da plataforma
-- [ ] Avaliar publicação automática via API da Meta
+- [x] Gerar a imagem "Promoções do dia" a partir da plataforma
+- [x] Avaliar publicação automática via API da Meta (docs/instagram-api-meta.md)
+
+## Extras já feitos
+- [x] Busca, página própria de cada promoção, compartilhar e "Como chegar"
+- [x] Novo visual (logo, ícone do site, categorias com ícone, selo de desconto)
+- [x] Botão "Quero anunciar" no rodapé (WhatsApp de quem vende os anúncios)
 
 ## Divulgação (fora do código)
 - Cada comércio parceiro divulga no próprio perfil e no balcão

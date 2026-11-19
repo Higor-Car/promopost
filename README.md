@@ -72,20 +72,57 @@ Tudo é feito no **Admin**.
 
 ## O que o consumidor vê
 
-- **Página inicial** — promoções valendo agora, destaques primeiro, com
-  filtro por cidade e por categoria (só aparecem as categorias que têm
-  promoção no ar). Selo "Acaba hoje" no que vence no dia.
-- **Página do comércio** — logo, endereço, Instagram, botão **Chamar no
-  WhatsApp** e as promoções do comércio. Cada promoção tem o botão
-  **Quero essa promoção**, que abre o WhatsApp do comércio com uma
-  mensagem pronta citando a promoção.
-- Os links ficam com título e imagem quando compartilhados no WhatsApp.
+- **Página inicial** — "Em destaque" no topo e depois as outras promoções
+  valendo agora. **Busca** (acha "acougue" em "Açougue", busca no título,
+  descrição, loja e categoria), filtro por **cidade** e por **categoria**
+  (com ícone; só aparecem as que têm promoção no ar). Selos de **desconto**
+  (ex.: -17%), "Acaba hoje" e "Destaque".
+- **Página da promoção** (`/p/<número>/`) — foto grande, preço, economia,
+  validade, botão **Quero essa promoção** (abre o WhatsApp da loja com a
+  mensagem pronta), **Compartilhar**, **Como chegar** e outras promoções da
+  mesma loja. Promoção vencida mostra um aviso e as que ainda valem.
+- **Página do comércio** (`/c/<slug>/`) — logo, descrição, endereço, botões
+  **Chamar no WhatsApp**, **Como chegar** (Google Maps), **Instagram** e
+  **Compartilhar**, e as promoções da loja.
+- Os links ficam com título e foto quando compartilhados no WhatsApp.
+- Rodapé com **"Quero anunciar"** (abre o WhatsApp de quem vende os
+  anúncios) quando `ACHOUPROMO_CONTATO_WHATSAPP` está preenchido no `.env`.
+
+## Resultado para o dono da loja
+
+Cada comércio tem um **link privado de resultado** (sem senha), que aparece
+na ficha do comércio no Admin, em *Resultado para o dono da loja*, e na
+coluna **resultado** da lista. Mande o link para o dono pelo WhatsApp.
+
+A página mostra, em 7, 30 ou 90 dias:
+
+- chamadas no WhatsApp, visitas, vezes que as promoções apareceram e acessos
+  pelo QR code da loja;
+- gráfico de visitas por dia e cliques em "Como chegar" e no Instagram;
+- números de cada promoção.
+
+Não contam robôs, prévias de link (WhatsApp, Facebook) nem quem está logado
+no Admin. O site guarda só contadores por dia, sem IP nem dados de quem
+acessou. Se um link vazar, use a ação **"Gerar novo link de resultado"** na
+lista de comércios: o antigo para de funcionar.
+
+## Instagram: imagem do dia
+
+Em **Promoções**, botão **📸 Imagem do dia (Instagram)**: gera imagens
+1080×1350 (formato do feed) com até 6 promoções, 3 por imagem; com mais de
+3, poste como carrossel. Sem escolher nada entram os destaques e as que
+acabam antes. Para escolher, marque na lista e use a ação **"Gerar imagem do
+Instagram com as selecionadas"**.
+
+A avaliação da publicação automática pela API da Meta está em
+[docs/instagram-api-meta.md](docs/instagram-api-meta.md).
 
 ## QR codes para as lojas
 
 No Admin, em **Comércios**, selecione as lojas e escolha a ação **"Imprimir
 QR codes"**. Abre uma página com um cartão por loja (2 por folha A4) com o
-QR code da página da loja no site. É só imprimir e recortar.
+QR code da página da loja no site. É só imprimir e recortar. Os acessos
+pelo QR code aparecem no resultado da loja.
 
 ## Site no ar (AWS Lightsail)
 
