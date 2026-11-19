@@ -755,3 +755,19 @@ class ImagemInteiraTests(Base):
         meio = quadro.getpixel((150, 150))
         self.assertLess(abs(meio[2] - 128), 10)
         self.assertNotEqual(quadro.getpixel((3, 150)), meio)
+
+
+class PorteiraoTests(Base):
+    def test_porteirao_no_filtro_e_na_loja(self):
+        loja = self.comercio("Mercado de Porteirão", cidade=Cidade.PORTEIRAO, endereco="Rua 1")
+        self.promocao(loja, "Oferta de Porteirão")
+        self.promocao(self.comercio("Loja de Maurilândia"), "Oferta de Maurilândia")
+        resp = self.client.get(reverse("inicio"))
+        self.assertContains(resp, ">Porteirão</a>")
+        resp = self.client.get(reverse("inicio"), {"cidade": "porteirao"})
+        self.assertContains(resp, "Oferta de Porteirão")
+        self.assertNotContains(resp, "Oferta de Maurilândia")
+        self.assertContains(resp, "de <span>Porteirão</span> em um só lugar")
+        resp = self.client.get(reverse("lojas"), {"cidade": "porteirao"})
+        self.assertEqual([l.nome for l in resp.context["lojas"]], ["Mercado de Porteirão"])
+        self.assertIn("Porteir%C3%A3o%20-%20GO", loja.link_mapa)

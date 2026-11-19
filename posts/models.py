@@ -13,6 +13,7 @@ from django.utils.text import slugify
 class Cidade(models.TextChoices):
     MAURILANDIA = "maurilandia", "Maurilândia"
     TURVELANDIA = "turvelandia", "Turvelândia"
+    PORTEIRAO = "porteirao", "Porteirão"
 
 
 def normalizar(texto):

@@ -1,6 +1,6 @@
 # Achou Promo
 
-Vitrine de promoções dos comércios da cidade (hoje Maurilândia e Turvelândia, pronta para crescer).
+Vitrine de promoções dos comércios da cidade (hoje Maurilândia, Turvelândia e Porteirão).
 Os comércios parceiros pagam uma mensalidade, e os consumidores veem as
 promoções de graça, sem precisar de login. Quem cadastra tudo é o
 administrador, pelo Admin do Django.
