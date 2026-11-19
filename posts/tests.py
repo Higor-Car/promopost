@@ -232,7 +232,9 @@ class VitrineTests(Base):
         self.mercado_m.ativo = False
         self.mercado_m.save()
         self.assertEqual(self.client.get(reverse("comercio", args=[self.mercado_m.slug])).status_code, 404)
-        self.assertEqual(self.client.get(reverse("comercio", args=["nao-existe"])).status_code, 404)
+        resp = self.client.get(reverse("comercio", args=["nao-existe"]))
+        self.assertEqual(resp.status_code, 404)
+        self.assertContains(resp, "Não achamos essa página.", status_code=404)
         self.assertNotContains(self.get(), "Arroz 5kg")
 
     def test_card_leva_para_a_promocao_na_pagina_do_comercio(self):

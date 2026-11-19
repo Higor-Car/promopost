@@ -98,7 +98,9 @@ class PromocaoQuerySet(models.QuerySet):
 
 
 class Promocao(models.Model):
-    comercio = models.ForeignKey(Comercio, on_delete=models.CASCADE, related_name="promocoes")
+    comercio = models.ForeignKey(
+        Comercio, on_delete=models.CASCADE, related_name="promocoes", verbose_name="comércio"
+    )
     titulo = models.CharField("título", max_length=150)
     descricao = models.TextField("descrição", blank=True)
     imagem = models.ImageField(upload_to="promocoes/%Y/%m/")

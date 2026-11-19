@@ -1,0 +1,11 @@
+{% extends "vitrine/base.html" %}
+
+{% block titulo %}Página não encontrada — Achou Promo{% endblock %}
+
+{% block conteudo %}
+<div class="vazio">
+  <p><strong>Não achamos essa página.</strong></p>
+  <p>O comércio pode ter saído do ar ou o endereço está errado.</p>
+  <p><a href="{% url 'inicio' %}">Ver as promoções de hoje</a></p>
+</div>
+{% endblock %}
