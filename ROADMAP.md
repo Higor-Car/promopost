@@ -21,7 +21,8 @@ Fechar cerca de 10 comércios antes do lançamento público.
 
 ## Fase 3 — No ar
 - [x] README
-- [ ] Domínio (achoupromos.com.br — o achoupromo.com.br já tinha dono)
+- [x] Domínio (achoupromos.com.br — o achoupromo.com.br já tinha dono)
+- [ ] HTTPS (rodar deploy/https.sh no servidor)
 - [x] Deploy (AWS Lightsail)
 - [x] QR codes para colar nos comércios parceiros
 
@@ -40,6 +41,7 @@ Fechar cerca de 10 comércios antes do lançamento público.
 - [x] Menu de abas no celular; páginas Lojas, Categorias e Para lojistas
 - [x] Página de cada loja como mini-site (capa, horário, abas Promoções/Informações)
 - [x] Visual mais limpo: sem emojis, menos categorias na tela, troca de cidade/categoria sem recarregar
+- [x] Tema claro/escuro, WhatsApp opcional por loja, textos sem cidade fixa, QR code só para baixar
 
 ## Divulgação (fora do código)
 - Cada comércio parceiro divulga no próprio perfil e no balcão

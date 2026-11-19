@@ -1,6 +1,6 @@
 # Achou Promo
 
-Vitrine de promoções dos comércios de **Maurilândia e Turvelândia**.
+Vitrine de promoções dos comércios da cidade (hoje Maurilândia e Turvelândia, pronta para crescer).
 Os comércios parceiros pagam uma mensalidade, e os consumidores veem as
 promoções de graça, sem precisar de login. Quem cadastra tudo é o
 administrador, pelo Admin do Django.
@@ -55,7 +55,9 @@ Tudo é feito no **Admin**.
 2. **Comércios** — nome, categoria, cidade, logo, **foto de capa**
    (horizontal, opcional; sem ela a loja ganha uma capa colorida desenhada),
    descrição, **horário de funcionamento** (uma linha por dia ou faixa),
-   endereço, WhatsApp (com DDD, de qualquer jeito: `(64) 99999-1234`
+   endereço, WhatsApp (com DDD, de qualquer jeito: `(64) 99999-1234`;
+   desmarque **mostrar botão de WhatsApp** se a loja quer aparecer só com as
+   ofertas, sem botão nem número
    funciona) e Instagram. O **slug** é o endereço da página do comércio
    (`/c/mercado-sao-jose/`) e é preenchido sozinho a partir do nome.
    Desmarcar **ativo** tira o comércio e todas as promoções dele da vitrine.
@@ -137,12 +139,23 @@ Instagram com as selecionadas"**.
 A avaliação da publicação automática pela API da Meta está em
 [docs/instagram-api-meta.md](docs/instagram-api-meta.md).
 
-## QR codes para as lojas
+## QR code das lojas
 
-No Admin, em **Comércios**, selecione as lojas e escolha a ação **"Imprimir
-QR codes"**. Abre uma página com um cartão por loja (2 por folha A4) com o
-QR code da página da loja no site. É só imprimir e recortar. Os acessos
-pelo QR code aparecem no resultado da loja.
+Na ficha do comércio no Admin, em **Para o dono da loja**, aparece o QR code
+da página da loja com o botão **Baixar QR code (PNG)**. Também dá para gerar
+de várias lojas de uma vez: selecione na lista e use a ação **"Gerar QR
+codes das lojas selecionadas"** (ou o link **baixar** na coluna QR code). Os
+acessos pelo QR code aparecem no resultado da loja.
+
+O link do dono e o QR code usam o domínio do `SITE_URL` com **http** enquanto
+o HTTPS não estiver ligado, e passam a usar **https** sozinhos depois do
+`https.sh`.
+
+## Tema claro e escuro
+
+O botão de sol/lua no topo troca entre o tema claro e o escuro (com uma
+animação de círculo que se abre a partir do botão). A escolha fica salva no
+aparelho; quem nunca escolheu vê o tema do próprio celular.
 
 ## Site no ar (AWS Lightsail)
 
