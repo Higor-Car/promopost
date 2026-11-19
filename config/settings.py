@@ -147,8 +147,15 @@ X_FRAME_OPTIONS = "DENY"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+        "descartar": {"class": "logging.NullHandler"},
+    },
     "root": {"handlers": ["console"], "level": "WARNING"},
+    "loggers": {
+        # Robôs acessam o IP com endereços aleatórios; o Django recusa (400) e não precisa logar.
+        "django.security.DisallowedHost": {"handlers": ["descartar"], "propagate": False},
+    },
 }
 
 
@@ -157,3 +164,7 @@ MAILERS = {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }
+
+# O site não envia e-mail (não tem cadastro de consumidor nem "esqueci a senha").
+# Se um dia enviar, configure um MAILERS de verdade e remova esta linha.
+SILENCED_SYSTEM_CHECKS = [] if DEBUG else ["mail.E001"]

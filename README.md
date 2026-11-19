@@ -81,6 +81,76 @@ Tudo é feito no **Admin**.
   mensagem pronta citando a promoção.
 - Os links ficam com título e imagem quando compartilhados no WhatsApp.
 
+## QR codes para as lojas
+
+No Admin, em **Comércios**, selecione as lojas e escolha a ação **"Imprimir
+QR codes"**. Abre uma página com um cartão por loja (2 por folha A4) com o
+QR code da página da loja no site. É só imprimir e recortar.
+
+## Site no ar (AWS Lightsail)
+
+O site roda num servidor **AWS Lightsail** (Ubuntu 24.04, região São Paulo)
+com nginx + gunicorn. O banco (SQLite) e as fotos ficam no disco do servidor,
+em `/srv/achoupromo/`. Os arquivos do servidor estão na pasta `deploy/`.
+
+### Publicar uma versão nova
+
+Depois de enviar as mudanças para o GitHub, entre no servidor (no console do
+Lightsail, botão **Connect using SSH**) e rode:
+
+```bash
+sudo bash /srv/achoupromo/app/deploy/atualizar.sh
+```
+
+O script faz backup do banco, baixa o código, aplica as migrações e reinicia
+o site.
+
+### Outros comandos no servidor
+
+```bash
+sudo bash /srv/achoupromo/app/deploy/manage.sh createsuperuser
+```
+
+```bash
+sudo journalctl -u achoupromo -n 100
+```
+
+O primeiro cria outro usuário do Admin. O segundo mostra os últimos registros
+do site (útil quando algo dá erro).
+
+### Backups
+
+- **Banco:** cópia automática todo dia às 03:30 em `/srv/achoupromo/backups/`
+  (guarda 14 dias).
+- **Servidor inteiro (banco + fotos):** ative os *snapshots automáticos* da
+  instância no console do Lightsail (aba **Snapshots**).
+
+### Domínio e HTTPS
+
+1. Registre `achoupromo.com.br` no [Registro.br](https://registro.br).
+2. No Registro.br, em **DNS → Editar zona**, crie dois registros do tipo
+   **A**: um para `achoupromo.com.br` e outro para `www.achoupromo.com.br`,
+   os dois apontando para o **IP fixo** do servidor (aparece no console do
+   Lightsail).
+3. Quando o endereço já abrir o site (pode levar algumas horas), instale o
+   certificado HTTPS, grátis e renovado sozinho:
+
+```bash
+sudo bash /srv/achoupromo/app/deploy/https.sh seu-email@exemplo.com
+```
+
+### Instalar do zero (servidor novo)
+
+Num Ubuntu 24.04 novo, com as portas 80 e 443 liberadas:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Higor-Car/promopost/main/deploy/instalar.sh -o instalar.sh
+```
+
+```bash
+sudo bash instalar.sh IP_DO_SERVIDOR
+```
+
 ## Testes
 
 ```bash
