@@ -178,7 +178,8 @@ class VitrineTests(Base):
         self.assertContains(resp, "Arroz 5kg")
         self.assertContains(resp, "Vitamina C")
         self.assertNotContains(resp, "Feijão vencido")
-        self.assertContains(resp, "2 ofertas valendo agora")
+        self.assertEqual(resp.context["total"], 2)
+        self.assertContains(resp, "<b>2</b> ofertas valendo agora", html=True)
 
     def test_preco_e_desconto(self):
         resp = self.get()
@@ -306,6 +307,114 @@ class VitrineTests(Base):
     def test_nao_precisa_de_login(self):
         self.client.logout()
         self.assertEqual(self.get().status_code, 200)
+
+
+class EstruturaTests(Base):
+    """Menu, páginas Lojas/Categorias/Para lojistas e abas da página da loja."""
+
+    def setUp(self):
+        super().setUp()
+        self.loja1 = self.comercio(
+            "Mercado Um", whatsapp="64999991234", instagram="@mercadoum", endereco="Rua 1, 10",
+            horario="Seg a sex: 7h às 19h\nSáb: 7h às 13h", descricao="Hortifrúti todo dia.",
+        )
+        self.farmacia_t = self.comercio("Farmácia Dois", categoria=self.farmacia, cidade=Cidade.TURVELANDIA)
+        self.sem_oferta = self.comercio("Loja Sem Oferta")
+        self.arroz = self.promocao(self.loja1, "Arroz 5kg")
+        hoje_noite = timezone.localtime().replace(hour=23, minute=59, second=0, microsecond=0)
+        self.pao = self.promocao(self.loja1, "Pão de hoje", fim=max(hoje_noite, self.agora + timedelta(minutes=30)))
+        self.remedio = self.promocao(self.farmacia_t, "Vitamina C", destaque=True)
+
+    def test_menu_em_todas_as_paginas(self):
+        for url in (reverse("inicio"), reverse("lojas"), reverse("categorias"), reverse("para_lojistas"),
+                    self.loja1.get_absolute_url(), self.arroz.get_absolute_url()):
+            resp = self.client.get(url)
+            self.assertContains(resp, 'class="menu-baixo"', msg_prefix=url)
+            self.assertContains(resp, reverse("para_lojistas"), msg_prefix=url)
+
+    def test_menu_marca_a_pagina_atual(self):
+        resp = self.client.get(reverse("lojas"))
+        self.assertContains(resp, f'href="{reverse("lojas")}" class="ativo" aria-current="page"')
+
+    def test_inicio_tem_secoes(self):
+        resp = self.client.get(reverse("inicio"))
+        self.assertContains(resp, "O que você procura?")
+        self.assertContains(resp, "Em destaque")
+        self.assertContains(resp, "Lojas parceiras")
+        self.assertContains(resp, "Conheça as vantagens")
+        if self.pao.acaba_hoje:
+            self.assertContains(resp, "Acaba hoje")
+            self.assertIn(self.pao, resp.context["acabando"])
+            self.assertNotIn(self.pao, resp.context["promocoes"])
+        # Loja sem oferta não aparece na faixa de lojas do início
+        self.assertNotIn(self.sem_oferta, resp.context["lojas"])
+
+    def test_pagina_lojas(self):
+        resp = self.client.get(reverse("lojas"))
+        self.assertContains(resp, "Mercado Um")
+        self.assertContains(resp, "Loja Sem Oferta")
+        self.assertContains(resp, "2 ofertas agora")
+        self.assertContains(resp, "Sem oferta agora")
+        nomes = [loja.nome for loja in resp.context["lojas"]]
+        self.assertEqual(nomes[-1], "Loja Sem Oferta")  # lojas com oferta primeiro
+        resp = self.client.get(reverse("lojas"), {"cidade": "turvelandia"})
+        self.assertEqual([loja.nome for loja in resp.context["lojas"]], ["Farmácia Dois"])
+        resp = self.client.get(reverse("lojas"), {"categoria": "farmacia"})
+        self.assertEqual([loja.nome for loja in resp.context["lojas"]], ["Farmácia Dois"])
+
+    def test_pagina_categorias(self):
+        resp = self.client.get(reverse("categorias"))
+        self.assertContains(resp, "Mercado")
+        self.assertContains(resp, "?categoria=mercado")
+        primeira = resp.context["categorias"][0]
+        self.assertGreater(primeira.total, 0)  # categorias com oferta primeiro
+        self.assertContains(resp, "Sem oferta agora")
+
+    def test_pagina_para_lojistas(self):
+        resp = self.client.get(reverse("para_lojistas"))
+        self.assertContains(resp, "Por que anunciar")
+        self.assertContains(resp, "Cliente chama direto no WhatsApp")
+        self.assertContains(resp, "Perguntas frequentes")
+        self.assertFalse(resp.context["mostrar_numeros"])  # poucos números ainda
+        self.assertNotContains(resp, "lojas parceiras</span>")
+
+    @override_settings(CONTATO_WHATSAPP="5564988887777")
+    def test_para_lojistas_com_contato(self):
+        resp = self.client.get(reverse("para_lojistas"))
+        self.assertContains(resp, "https://wa.me/5564988887777?text=")
+        self.assertContains(resp, "Quero anunciar")
+
+    def test_loja_aba_promocoes_por_padrao(self):
+        resp = self.client.get(self.loja1.get_absolute_url())
+        self.assertEqual(resp.context["aba"], "promocoes")
+        self.assertContains(resp, 'id="painel-info" role="tabpanel" aria-labelledby="aba-info" hidden')
+        self.assertContains(resp, "Arroz 5kg")
+
+    def test_loja_aba_informacoes(self):
+        resp = self.client.get(self.loja1.get_absolute_url(), {"aba": "info"})
+        self.assertEqual(resp.context["aba"], "info")
+        self.assertContains(resp, 'id="painel-promocoes" role="tabpanel" aria-labelledby="aba-promocoes" hidden')
+        self.assertContains(resp, "Horário de funcionamento")
+        self.assertContains(resp, "Sáb: 7h às 13h")
+        self.assertContains(resp, "(64) 99999-1234")
+        self.assertContains(resp, "Hortifrúti todo dia.")
+
+    def test_capa_da_loja(self):
+        resp = self.client.get(self.loja1.get_absolute_url())
+        self.assertContains(resp, 'class="padrao"')  # sem foto: capa desenhada
+        self.loja1.capa = imagem_falsa("capa.png")
+        self.loja1.save()
+        resp = self.client.get(self.loja1.get_absolute_url())
+        self.assertContains(resp, "/media/comercios/capas/")
+
+    def test_whatsapp_formatado(self):
+        self.assertEqual(Comercio(whatsapp="64999991234").whatsapp_formatado, "(64) 99999-1234")
+        self.assertEqual(Comercio(whatsapp="6435551234").whatsapp_formatado, "(64) 3555-1234")
+
+    def test_arquivos_estaticos_do_visual(self):
+        resp = self.client.get(reverse("inicio"))
+        self.assertContains(resp, "vitrine/site.css")
+        self.assertContains(resp, "vitrine/site.js")
 
 
 class MetricasTests(Base):

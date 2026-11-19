@@ -36,7 +36,7 @@ class ComercioAdmin(admin.ModelAdmin):
     actions = ("imprimir_qrcodes", "gerar_novo_link_resultado")
     fieldsets = (
         (None, {"fields": ("nome", "slug", "categoria", "cidade", "ativo")}),
-        ("Na vitrine", {"fields": ("logo", "descricao", "endereco", "whatsapp", "instagram")}),
+        ("Na vitrine", {"fields": ("logo", "capa", "descricao", "horario", "endereco", "whatsapp", "instagram")}),
         ("Contrato", {"fields": ("plano", "mensalidade")}),
         ("Resultado para o dono da loja", {"fields": ("link_resultado",)}),
     )

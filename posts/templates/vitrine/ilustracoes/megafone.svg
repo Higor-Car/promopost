@@ -1,0 +1,11 @@
+<svg class="megafone" viewBox="0 0 200 160" aria-hidden="true">
+  <g class="flutua">
+    <path d="M30 70v24a8 8 0 0 0 8 8h14l60 36V26L52 62H38a8 8 0 0 0-8 8Z" fill="#ea580c"/>
+    <path d="M112 26v112c10-4 16-28 16-56s-6-52-16-56Z" fill="#fdba74"/>
+    <rect x="48" y="102" width="20" height="36" rx="6" fill="#c2410c"/>
+  </g>
+  <g stroke="#fdba74" stroke-width="7" stroke-linecap="round" fill="none">
+    <path class="flutua d2" d="M146 60c8 8 8 36 0 44"/>
+    <path class="flutua d3" d="M164 44c16 16 16 60 0 76"/>
+  </g>
+</svg>

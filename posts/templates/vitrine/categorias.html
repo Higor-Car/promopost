@@ -1,0 +1,32 @@
+{% extends "vitrine/base.html" %}
+
+{% block titulo %}Categorias — Achou Promo{% endblock %}
+{% block descricao %}Promoções de mercado, açougue, padaria, farmácia e mais em Maurilândia e Turvelândia.{% endblock %}
+
+{% block estilo_extra %}<style>
+  .tiles-grandes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
+  @media (min-width: 720px) { .tiles-grandes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 1000px) { .tiles-grandes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .tiles-grandes .tile { align-items: flex-start; text-align: left; padding: 16px; gap: 10px; }
+  .tiles-grandes .tile .emoji { width: 56px; height: 56px; font-size: 30px; }
+  .tiles-grandes .tile strong { font-size: 16px; }
+  .tiles-grandes .tile small { font-size: 13px; }
+</style>{% endblock %}
+
+{% block conteudo %}
+<div class="secao" style="margin-top: 4px">
+  <div>
+    <h2 style="font-size: 24px">Categorias</h2>
+    <p>Escolha o que você procura e veja as ofertas da cidade.</p>
+  </div>
+</div>
+<nav class="tiles-grandes" aria-label="Categorias">
+  {% for c in categorias %}
+    <a class="tile anima{% if not c.total %} vazia{% endif %}" style="--i: {{ forloop.counter0 }}" href="{% if c.total %}{% url 'inicio' %}?categoria={{ c.slug }}{% else %}{% url 'lojas' %}?categoria={{ c.slug }}{% endif %}">
+      <span class="emoji" aria-hidden="true">{{ c.icone|default:"🏷️" }}</span>
+      <strong>{{ c.nome }}</strong>
+      <small>{% if c.total %}{{ c.total }} oferta{{ c.total|pluralize }} agora{% else %}Sem oferta agora{% endif %}{% if c.lojas %} · {{ c.lojas }} loja{{ c.lojas|pluralize }}{% endif %}</small>
+    </a>
+  {% endfor %}
+</nav>
+{% endblock %}

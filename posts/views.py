@@ -1,7 +1,7 @@
 from collections import Counter, defaultdict
 from datetime import timedelta
 
-from django.db.models import Sum
+from django.db.models import Count, Q, Sum
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -16,10 +16,24 @@ def _ativas():
     return Promocao.objects.ativas().select_related("comercio__categoria")
 
 
-def inicio(request):
+def _cidade(request):
     cidade = request.GET.get("cidade", "")
-    if cidade not in Cidade.values:
-        cidade = ""
+    return cidade if cidade in Cidade.values else ""
+
+
+def _lojas_com_contagem(cidade=""):
+    """Lojas ativas com o número de promoções no ar (lojas com promoção primeiro)."""
+    agora = timezone.now()
+    lojas = Comercio.objects.filter(ativo=True).select_related("categoria").annotate(
+        no_ar=Count("promocoes", filter=Q(promocoes__inicio__lte=agora, promocoes__fim__gt=agora))
+    )
+    if cidade:
+        lojas = lojas.filter(cidade=cidade)
+    return lojas.order_by("-no_ar", "nome")
+
+
+def inicio(request):
+    cidade = _cidade(request)
     busca = request.GET.get("q", "").strip()[:80]
 
     promocoes = list(_ativas())
@@ -43,9 +57,14 @@ def inicio(request):
         palavras = normalizar(busca).split()
         promocoes = [p for p in promocoes if all(w in p.texto_busca() for w in palavras)]
 
-    filtrando = bool(busca or categoria or cidade)
+    filtrando = bool(busca or categoria)
     destaques = [] if filtrando else [p for p in promocoes if p.destaque]
-    demais = [p for p in promocoes if p not in destaques]
+    acabando = [] if filtrando else [p for p in promocoes if p.acaba_hoje and p not in destaques]
+    demais = [p for p in promocoes if p not in destaques and p not in acabando]
+
+    lojas = []
+    if not filtrando:
+        lojas = [loja for loja in _lojas_com_contagem(cidade) if loja.no_ar][:12]
 
     metricas.registrar_varios(request, Tipo.IMPRESSAO, [(p.comercio_id, p.pk) for p in promocoes])
 
@@ -53,9 +72,12 @@ def inicio(request):
         request,
         "vitrine/inicio.html",
         {
+            "menu": "inicio",
             "destaques": destaques,
+            "acabando": acabando,
             "promocoes": demais,
-            "capa": (destaques or demais or [None])[0],
+            "lojas": lojas,
+            "capa": (destaques or demais or acabando or [None])[0],
             "total": len(promocoes),
             "cidades": Cidade.choices,
             "cidade": cidade,
@@ -68,6 +90,61 @@ def inicio(request):
     )
 
 
+def lojas(request):
+    cidade = _cidade(request)
+    todas = list(_lojas_com_contagem(cidade))
+    categorias = sorted({loja.categoria for loja in todas}, key=lambda c: (c.ordem, c.nome))
+    categoria = None
+    slug = request.GET.get("categoria", "")
+    if slug:
+        categoria = next((c for c in categorias if c.slug == slug), None)
+    if categoria:
+        todas = [loja for loja in todas if loja.categoria_id == categoria.pk]
+    return render(
+        request,
+        "vitrine/lojas.html",
+        {
+            "menu": "lojas",
+            "lojas": todas,
+            "cidades": Cidade.choices,
+            "cidade": cidade,
+            "cidade_nome": Cidade(cidade).label if cidade else "",
+            "categorias": categorias,
+            "categoria": categoria,
+        },
+    )
+
+
+def categorias(request):
+    contagem = Counter(p.comercio.categoria_id for p in _ativas())
+    lista = list(Categoria.objects.annotate(lojas=Count("comercios", filter=Q(comercios__ativo=True))))
+    for c in lista:
+        c.total = contagem.get(c.pk, 0)
+    lista.sort(key=lambda c: (c.total == 0, c.ordem, c.nome))
+    return render(request, "vitrine/categorias.html", {"menu": "categorias", "categorias": lista})
+
+
+def para_lojistas(request):
+    agora = timezone.now()
+    inicio_mes = timezone.localdate() - timedelta(days=29)
+    numeros = {
+        "lojas": Comercio.objects.filter(ativo=True).count(),
+        "promocoes": Promocao.objects.ativas(agora).count(),
+        "visitas": MetricaDiaria.objects.filter(
+            dia__gte=inicio_mes, tipo__in=[Tipo.VISITA_COMERCIO, Tipo.VISITA_PROMOCAO]
+        ).aggregate(n=Sum("total"))["n"] or 0,
+        "whatsapp": MetricaDiaria.objects.filter(dia__gte=inicio_mes, tipo=Tipo.WHATSAPP)
+        .aggregate(n=Sum("total"))["n"] or 0,
+    }
+    # Só mostra os números quando já impressionam; no começo eles mais atrapalham que ajudam.
+    mostrar_numeros = numeros["lojas"] >= 5 and numeros["visitas"] >= 300
+    return render(
+        request,
+        "vitrine/para_lojistas.html",
+        {"menu": "lojistas", "numeros": numeros, "mostrar_numeros": mostrar_numeros},
+    )
+
+
 def comercio(request, slug):
     loja = get_object_or_404(Comercio.objects.select_related("categoria"), slug=slug, ativo=True)
     promocoes = list(loja.promocoes.ativas().select_related("comercio__categoria"))
@@ -77,7 +154,12 @@ def comercio(request, slug):
         metricas.registrar(request, Tipo.QR, loja.pk)
     metricas.registrar_varios(request, Tipo.IMPRESSAO, [(loja.pk, p.pk) for p in promocoes])
 
-    return render(request, "vitrine/comercio.html", {"loja": loja, "promocoes": promocoes})
+    aba = "info" if request.GET.get("aba") == "info" else "promocoes"
+    return render(
+        request,
+        "vitrine/comercio.html",
+        {"menu": "lojas", "loja": loja, "promocoes": promocoes, "aba": aba},
+    )
 
 
 def promocao(request, pk):
@@ -93,7 +175,9 @@ def promocao(request, pk):
     outras = list(
         promo.comercio.promocoes.ativas().exclude(pk=promo.pk).select_related("comercio__categoria")[:6]
     )
-    return render(request, "vitrine/promocao.html", {"promo": promo, "loja": promo.comercio, "outras": outras})
+    return render(
+        request, "vitrine/promocao.html", {"menu": "inicio", "promo": promo, "loja": promo.comercio, "outras": outras}
+    )
 
 
 # ---- Links de saída: contam o clique e mandam para o destino ----

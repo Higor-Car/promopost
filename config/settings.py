@@ -129,8 +129,14 @@ USE_I18N = True
 USE_TZ = True
 
 
-# CSS/JS do admin. No servidor o nginx serve a pasta STATIC_ROOT.
+# CSS/JS do site e do admin. No servidor o nginx serve a pasta STATIC_ROOT.
 STATIC_URL = "static/"
+if not DEBUG:
+    # Nome do arquivo muda a cada versão (site.3fa1c2.css): o celular nunca fica com o visual antigo em cache.
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"},
+    }
 STATIC_ROOT = _env("DJANGO_STATIC_ROOT") or BASE_DIR / "staticfiles"
 
 # Imagens enviadas no admin (promoções e logos). No servidor o nginx serve esta pasta.

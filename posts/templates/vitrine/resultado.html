@@ -4,9 +4,8 @@
 {% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
 {% block og_titulo %}Resultado no Achou Promo{% endblock %}
 {% block busca %}{% endblock %}
-{% block anuncie %}{% endblock %}
 
-{% block estilo %}
+{% block estilo_extra %}<style>
     .res-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
     .res-topo h1 { margin: 0; font-size: 24px; font-weight: 800; line-height: 1.15; }
     .res-topo p { margin: 4px 0 0; color: var(--suave); font-size: 14px; }
@@ -50,7 +49,7 @@
     .extras { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 14px; color: var(--suave); font-size: 14px; }
     .extras strong { color: var(--texto); }
     .nota { margin: 18px 0 0; color: var(--suave); font-size: 13px; }
-{% endblock %}
+</style>{% endblock %}
 
 {% block conteudo %}
 <div class="res-topo">

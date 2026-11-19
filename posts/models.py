@@ -55,6 +55,14 @@ class Comercio(models.Model):
     endereco = models.CharField("endereço", max_length=200, blank=True)
     descricao = models.TextField("descrição", blank=True)
     logo = models.ImageField(upload_to="comercios/", blank=True)
+    capa = models.ImageField(
+        "foto de capa", upload_to="comercios/capas/", blank=True,
+        help_text="Opcional. Foto horizontal da fachada ou dos produtos; aparece no topo da página da loja.",
+    )
+    horario = models.TextField(
+        "horário de funcionamento", blank=True,
+        help_text="Uma linha por dia ou faixa. Ex.: Seg a sex: 7h às 19h / Sáb: 7h às 13h",
+    )
     whatsapp = models.CharField(
         max_length=20, blank=True, help_text="Com DDD. Ex.: (64) 99999-1234"
     )
@@ -114,6 +122,22 @@ class Comercio(models.Model):
 
     def get_resultado_url(self):
         return reverse("resultado", args=[self.token_resultado])
+
+    CORES_CAPA = ("#ea580c", "#0f766e", "#7c3aed", "#be123c", "#1d4ed8", "#b45309", "#15803d", "#c026d3")
+
+    @property
+    def cor_capa(self):
+        """Cor da capa desenhada quando a loja não tem foto de capa (fixa por loja)."""
+        return self.CORES_CAPA[(self.pk or 0) % len(self.CORES_CAPA)]
+
+    @property
+    def whatsapp_formatado(self):
+        d = self.whatsapp_numero[2:] if self.whatsapp_numero.startswith("55") else self.whatsapp_numero
+        if len(d) == 11:
+            return f"({d[:2]}) {d[2:7]}-{d[7:]}"
+        if len(d) == 10:
+            return f"({d[:2]}) {d[2:6]}-{d[6:]}"
+        return self.whatsapp
 
 
 class PromocaoQuerySet(models.QuerySet):

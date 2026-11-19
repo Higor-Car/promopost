@@ -1,0 +1,9 @@
+<svg viewBox="0 0 160 120" aria-hidden="true">
+  <ellipse cx="80" cy="110" rx="56" ry="6" fill="#000" opacity=".08"/>
+  <path d="M30 46 80 30l50 16v48l-50 16-50-16Z" fill="#fed7aa"/>
+  <path d="M80 62v48L30 94V46Z" fill="#fdba74"/>
+  <path d="M30 46 80 62l50-16" fill="none" stroke="#fff" stroke-width="3"/>
+  <path d="M30 46 14 62l50 16 16-16Z" fill="#ffedd5"/>
+  <path d="M130 46l16 16-50 16-16-16Z" fill="#ffedd5"/>
+  <g class="flutua"><path d="M96 8h20a4 4 0 0 1 4 4v12l-14 14-14-14V12a4 4 0 0 1 4-4Z" fill="#ea580c"/><circle cx="106" cy="16" r="3" fill="#fff"/></g>
+</svg>

@@ -4,6 +4,9 @@ from . import views
 
 urlpatterns = [
     path("", views.inicio, name="inicio"),
+    path("lojas/", views.lojas, name="lojas"),
+    path("categorias/", views.categorias, name="categorias"),
+    path("para-lojistas/", views.para_lojistas, name="para_lojistas"),
     path("c/<slug:slug>/", views.comercio, name="comercio"),
     path("p/<int:pk>/", views.promocao, name="promocao"),
     # Saídas que contam o clique antes de ir para o destino
