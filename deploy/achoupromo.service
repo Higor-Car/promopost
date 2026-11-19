@@ -5,13 +5,12 @@ After=network.target
 [Service]
 Type=simple
 User=achoupromo
-Group=www-data
-RuntimeDirectory=achoupromo
+Group=achoupromo
 WorkingDirectory=/srv/achoupromo/app
 EnvironmentFile=/srv/achoupromo/.env
+# Só aceita conexões do próprio servidor (o nginx); a internet não chega aqui direto.
 ExecStart=/srv/achoupromo/venv/bin/gunicorn config.wsgi:application \
-    --bind unix:/run/achoupromo/gunicorn.sock \
-    --umask 007 \
+    --bind 127.0.0.1:8000 \
     --workers 2 \
     --timeout 30 \
     --access-logfile - \
@@ -19,6 +18,19 @@ ExecStart=/srv/achoupromo/venv/bin/gunicorn config.wsgi:application \
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=on-failure
 RestartSec=3
+UMask=0027
+
+# Proteções do systemd: o site só consegue escrever nas pastas de dados.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/achoupromo/dados /srv/achoupromo/media
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
 
 [Install]
 WantedBy=multi-user.target

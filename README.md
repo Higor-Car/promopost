@@ -93,6 +93,15 @@ O site roda num servidor **AWS Lightsail** (Ubuntu 24.04, região São Paulo)
 com nginx + gunicorn. O banco (SQLite) e as fotos ficam no disco do servidor,
 em `/srv/achoupromo/`. Os arquivos do servidor estão na pasta `deploy/`.
 
+Segurança do servidor:
+
+- No firewall do Lightsail só ficam abertas as portas 80 e 443 (o site). A
+  porta 22 (SSH) aceita apenas o botão **Connect using SSH** do console.
+- O site roda com um usuário próprio e só consegue escrever no banco e nas
+  fotos. O nginx não tem acesso ao banco nem ao `.env` (chave secreta).
+- O login do admin aceita no máximo 10 tentativas por minuto por IP.
+- As atualizações de segurança do Ubuntu são instaladas sozinhas.
+
 ### Publicar uma versão nova
 
 Depois de enviar as mudanças para o GitHub, entre no servidor (no console do
@@ -141,7 +150,7 @@ sudo bash /srv/achoupromo/app/deploy/https.sh seu-email@exemplo.com
 
 ### Instalar do zero (servidor novo)
 
-Num Ubuntu 24.04 novo, com as portas 80 e 443 liberadas:
+Num Ubuntu 24.04 novo, com as portas 80 e 443 liberadas (e a 22 restrita ao SSH do console):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Higor-Car/promopost/main/deploy/instalar.sh -o instalar.sh

@@ -127,6 +127,7 @@ STATIC_ROOT = _env("DJANGO_STATIC_ROOT") or BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = _env("DJANGO_MEDIA_ROOT") or BASE_DIR / "media"
 FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
 
 # HTTPS: ligado no servidor depois que o certificado (Let's Encrypt) estiver instalado.

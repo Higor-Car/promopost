@@ -8,6 +8,7 @@ ARQUIVO=$DESTINO/db-$(date +%Y-%m-%d_%H%M).sqlite3
 
 sqlite3 /srv/achoupromo/dados/db.sqlite3 ".backup '$ARQUIVO'"
 gzip -f "$ARQUIVO"
-chown achoupromo:www-data "$ARQUIVO.gz"
+chown achoupromo:achoupromo "$ARQUIVO.gz"
+chmod 600 "$ARQUIVO.gz"
 find "$DESTINO" -name 'db-*.sqlite3.gz' -mtime +14 -delete
 echo "Backup: $ARQUIVO.gz"
