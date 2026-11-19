@@ -1,9 +1,13 @@
-# PromoPost
+# Achou Promo
 
-Painel para cadastrar, aprovar e (em breve) agendar promoções de comércios de
-Maurilândia e Turvelândia para publicar no Instagram e no Facebook.
+Vitrine de promoções dos comércios de **Maurilândia e Turvelândia**.
+Os comércios parceiros pagam uma mensalidade, e os consumidores veem as
+promoções de graça, sem precisar de login. Quem cadastra tudo é o
+administrador, pelo Admin do Django.
 
-O que falta fazer está no [ROADMAP.md](ROADMAP.md).
+O que falta fazer está no [ROADMAP.md](ROADMAP.md). A versão antiga do
+projeto (PromoPost, com agendamento de postagens) está guardada na tag
+`promopost-v1` do Git.
 
 ## Requisitos
 
@@ -23,7 +27,7 @@ Ative o ambiente virtual:
 - Windows (PowerShell): `venv\Scripts\Activate.ps1`
 - Linux/macOS: `source venv/bin/activate`
 
-Instale as dependências, crie o banco e o usuário de acesso:
+Instale as dependências, crie o banco e o usuário administrador:
 
 ```bash
 pip install -r requirements.txt
@@ -31,85 +35,51 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-## Rodando o sistema
-
-Com o ambiente virtual ativado:
+## Rodando
 
 ```bash
 python manage.py runserver
 ```
 
-Abra <http://127.0.0.1:8000/> no navegador e entre com o usuário criado acima.
+- Vitrine (público): <http://127.0.0.1:8000/>
+- Admin (cadastros): <http://127.0.0.1:8000/admin/>
 
-## Como usar
+## Como cadastrar
 
-1. **Cadastrar comércios** — em **Admin** (<http://127.0.0.1:8000/admin/>), em
-   *Comércios*, cadastre nome, cidade, WhatsApp, Instagram, plano e mensalidade.
-2. **Cadastrar uma promoção** — em **Nova promoção**, escolha o comércio,
-   preencha título, legenda, imagem e as datas de início e fim.
-   O fim precisa ser depois do início.
-3. **Aprovar** — na lista de **Promoções**, clique em **Aprovar** quando o
-   cliente der o ok. O sistema já agenda uma postagem no Instagram e outra no
-   Facebook para o horário de início (ou para agora, se o início já passou).
-   Promoção que já terminou não pode ser aprovada.
-4. **Postar** — abra o **Calendário**. No horário, a postagem aparece em
-   **Hora de postar**: baixe a imagem, copie a legenda, poste na rede indicada
-   e clique em **Marcar como publicada**. Quando Instagram e Facebook estiverem
-   marcados, a promoção vira *Publicada*. (Na Fase 4 isso será automático pela
-   API da Meta.)
-5. **Editar** — disponível até alguma postagem ser publicada. Se você alterar
-   uma promoção aprovada/agendada, o agendamento é cancelado e ela volta para
-   rascunho, precisando ser aprovada de novo.
-6. **Excluir** — pede confirmação e apaga a promoção junto com a imagem.
-   Depois que algo foi publicado não dá mais para excluir (fica no histórico).
+Tudo é feito no **Admin**.
 
-### Calendário
+1. **Categorias** — já vêm 11 prontas (Mercado, Açougue, Padaria,
+   Farmácia, Restaurante e lanchonete, Roupas e calçados, Beleza, Casa e
+   construção, Pet, Serviços, Outros). Dá para criar outras e mudar a
+   **ordem** em que aparecem.
+2. **Comércios** — nome, categoria, cidade, logo, descrição, endereço,
+   WhatsApp (com DDD, de qualquer jeito: `(64) 99999-1234` funciona) e
+   Instagram. O **slug** é o endereço da página do comércio
+   (`/c/mercado-sao-jose/`) e é preenchido sozinho a partir do nome.
+   Desmarcar **ativo** tira o comércio e todas as promoções dele da vitrine.
+3. **Promoções** — comércio, título, imagem (de preferência quadrada),
+   descrição e, se quiser, preço e "preço antes" (aparece riscado).
+   - **Aparece a partir de** e **válida até**: a promoção só aparece na
+     vitrine nesse período e some sozinha quando vence.
+   - **Destaque**: aparece primeiro, com selo amarelo. Dá para marcar
+     direto na lista de promoções.
+   - Na lista dá para filtrar por situação (*na vitrine*, *ainda vai
+     entrar*, *vencida*), cidade e categoria.
+   - Para tirar promoções do ar antes da hora: selecione na lista e use a
+     ação **"Encerrar agora"**.
+   - Editar e excluir: clique na promoção; o botão **Excluir** fica no fim
+     da página.
 
-Em **Calendário** ficam as postagens do mês, dia a dia, com o status de cada
-uma (Agendada, Hora de postar, Publicada ou Não publicada). Use as setas para
-trocar de mês.
+## O que o consumidor vê
 
-### Status de uma promoção
-
-| Status | Significado |
-| --- | --- |
-| Rascunho | Cadastrada, ainda não revisada |
-| Aguardando aprovação do cliente | Enviada para o cliente conferir |
-| Aprovada | Cliente aprovou (passa para Agendada na hora) |
-| Agendada | Postagens criadas para Instagram e Facebook |
-| Publicada | Foi ao ar nas duas redes |
-| Encerrada | Passou da data de fim (encerrada pelo agendador) |
-
-## Agendador
-
-O comando abaixo encerra as promoções que passaram do fim, agenda as que
-foram aprovadas pelo Admin e mostra quantas postagens estão na hora de
-publicar. Ele precisa rodar sozinho de tempos em tempos (recomendado: a cada
-5 minutos).
-
-```bash
-python manage.py processar_agendamentos
-```
-
-Para deixar rodando numa janela do terminal, repetindo a cada 5 minutos
-(feche com Ctrl+C):
-
-```bash
-python manage.py processar_agendamentos --a-cada 5
-```
-
-**Windows (Agendador de Tarefas)** — cria uma tarefa que roda a cada 5 minutos
-(ajuste o caminho da pasta do projeto):
-
-```bash
-schtasks /Create /SC MINUTE /MO 5 /TN "PromoPost agendador" /TR "C:\caminho\promopost\venv\Scripts\python.exe C:\caminho\promopost\manage.py processar_agendamentos"
-```
-
-**Linux (cron)** — adicione com `crontab -e`:
-
-```
-*/5 * * * * cd /caminho/promopost && venv/bin/python manage.py processar_agendamentos >> agendador.log 2>&1
-```
+- **Página inicial** — promoções valendo agora, destaques primeiro, com
+  filtro por cidade e por categoria (só aparecem as categorias que têm
+  promoção no ar). Selo "Acaba hoje" no que vence no dia.
+- **Página do comércio** — logo, endereço, Instagram, botão **Chamar no
+  WhatsApp** e as promoções do comércio. Cada promoção tem o botão
+  **Quero essa promoção**, que abre o WhatsApp do comércio com uma
+  mensagem pronta citando a promoção.
+- Os links ficam com título e imagem quando compartilhados no WhatsApp.
 
 ## Testes
 
@@ -119,10 +89,10 @@ python manage.py test posts
 
 ## Estrutura
 
-- `config/` — configurações do Django (idioma pt-BR, fuso de São Paulo, login)
-- `posts/` — app principal: models `Comercio`, `Promocao` e `Postagem`,
-  telas de lista, formulário, aprovação, edição, exclusão e calendário
-- `posts/agendamento.py` — regras de agendamento, publicação e encerramento
-- `posts/management/commands/processar_agendamentos.py` — o agendador
+- `config/` — configurações do Django (pt-BR, fuso de São Paulo)
+- `posts/` — app principal
+  - `models.py` — `Categoria`, `Comercio` e `Promocao`
+  - `admin.py` — telas de cadastro
+  - `views.py` e `templates/vitrine/` — vitrine pública
 - `media/` — imagens enviadas (não vai para o Git)
 - `db.sqlite3` — banco de dados local (não vai para o Git)
