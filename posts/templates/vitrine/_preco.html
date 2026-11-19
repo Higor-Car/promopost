@@ -1,0 +1,6 @@
+{% if p.preco is not None %}
+  <div class="preco">
+    {% if p.preco_de is not None %}<span class="de">R$ {{ p.preco_de|floatformat:"2g" }}</span>{% endif %}
+    <span class="por">R$ {{ p.preco|floatformat:"2g" }}</span>
+  </div>
+{% endif %}

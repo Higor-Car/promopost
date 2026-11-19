@@ -1,0 +1,44 @@
+{% extends "vitrine/base.html" %}
+
+{% block titulo %}{% if categoria or cidade %}Promoções{% if categoria %} de {{ categoria.nome|lower }}{% endif %}{% if cidade %} em {{ cidade_nome }}{% endif %} — Achou Promo{% else %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block og_imagem %}{% with primeira=promocoes.0 %}{% if primeira %}
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ primeira.imagem.url }}">
+{% endif %}{% endwith %}{% endblock %}
+
+{% block conteudo %}
+<nav class="filtros" aria-label="Cidade">
+  <a class="chip{% if not cidade %} ativo{% endif %}" href="{% querystring cidade=None %}">Todas as cidades</a>
+  {% for valor, nome in cidades %}
+    <a class="chip{% if cidade == valor %} ativo{% endif %}" href="{% querystring cidade=valor %}">{{ nome }}</a>
+  {% endfor %}
+</nav>
+
+{% if categorias %}
+<nav class="filtros" aria-label="Categoria">
+  <a class="chip{% if not categoria %} ativo{% endif %}" href="{% querystring categoria=None %}">Tudo</a>
+  {% for c in categorias %}
+    <a class="chip{% if categoria == c %} ativo{% endif %}" href="{% querystring categoria=c.slug %}">{{ c.nome }} <small>{{ c.total }}</small></a>
+  {% endfor %}
+</nav>
+{% endif %}
+
+<h2 class="titulo-secao">
+  {% if promocoes %}{{ promocoes|length }} promoç{{ promocoes|length|pluralize:"ão,ões" }} valendo agora{% else %}Promoções{% endif %}
+</h2>
+
+{% if promocoes %}
+  <div class="grade">
+    {% for p in promocoes %}{% include "vitrine/_card.html" %}{% endfor %}
+  </div>
+{% else %}
+  <div class="vazio">
+    {% if categoria or cidade %}
+      <p>Nenhuma promoção com esses filtros agora.</p>
+      <p><a href="{% url 'inicio' %}">Ver todas as promoções</a></p>
+    {% else %}
+      <p>Nenhuma promoção no ar agora. Volte daqui a pouco!</p>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

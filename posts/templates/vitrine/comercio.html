@@ -1,0 +1,69 @@
+{% extends "vitrine/base.html" %}
+
+{% block titulo %}{{ loja.nome }} — promoções em {{ loja.get_cidade_display }} | Achou Promo{% endblock %}
+{% block descricao %}Promoções de {{ loja.nome }} ({{ loja.categoria.nome }}, {{ loja.get_cidade_display }}) no Achou Promo.{% endblock %}
+{% block og_titulo %}{{ loja.nome }} no Achou Promo{% endblock %}
+{% block og_descricao %}{% if promocoes %}{{ promocoes|length }} promoç{{ promocoes|length|pluralize:"ão,ões" }} valendo agora em {{ loja.get_cidade_display }}.{% else %}{{ loja.categoria.nome }} em {{ loja.get_cidade_display }}.{% endif %}{% endblock %}
+{% block og_imagem %}{% with primeira=promocoes.0 %}{% if primeira %}
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ primeira.imagem.url }}">
+{% elif loja.logo %}
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ loja.logo.url }}">
+{% endif %}{% endwith %}{% endblock %}
+
+{% block conteudo %}
+<a class="voltar" href="{% url 'inicio' %}">&larr; Todas as promoções</a>
+
+<section class="perfil">
+  <div class="cabeca">
+    {% if loja.logo %}
+      <img class="logo" src="{{ loja.logo.url }}" alt="Logo de {{ loja.nome }}">
+    {% else %}
+      <span class="logo" aria-hidden="true">{{ loja.nome|first|upper }}</span>
+    {% endif %}
+    <div>
+      <h1>{{ loja.nome }}</h1>
+      <div class="info">{{ loja.categoria.nome }} · {{ loja.get_cidade_display }}</div>
+    </div>
+  </div>
+  {% if loja.descricao %}<p>{{ loja.descricao|linebreaksbr }}</p>{% endif %}
+  {% if loja.endereco %}<p class="info">📍 {{ loja.endereco }}</p>{% endif %}
+  {% if whatsapp or loja.instagram_usuario %}
+    <div class="acoes">
+      {% if whatsapp %}
+        <a class="botao whatsapp" href="{{ whatsapp }}" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+      {% endif %}
+      {% if loja.instagram_usuario %}
+        <a class="botao secundario" href="https://instagram.com/{{ loja.instagram_usuario }}" target="_blank" rel="noopener">@{{ loja.instagram_usuario }}</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+
+<h2 class="titulo-secao">
+  {% if promocoes %}Promoções valendo agora{% else %}Promoções{% endif %}
+</h2>
+
+{% if promocoes %}
+  <div class="promo-lista">
+    {% for p in promocoes %}
+      <article class="promo{% if p.destaque %} destaque{% endif %}" id="promo-{{ p.pk }}">
+        <img src="{{ p.imagem.url }}" alt="{{ p.titulo }}" loading="lazy">
+        <div class="corpo">
+          <h2>{{ p.titulo }}</h2>
+          {% include "vitrine/_preco.html" %}
+          {% if p.descricao %}<p class="descricao">{{ p.descricao }}</p>{% endif %}
+          <span class="validade">{% if p.acaba_hoje %}Acaba hoje às {{ p.fim|date:"H:i" }}{% else %}Válida até {{ p.fim|date:"d/m \à\s H:i" }}{% endif %}</span>
+          {% with link=p.link_whatsapp %}{% if link %}
+            <a class="botao whatsapp largo" href="{{ link }}" target="_blank" rel="noopener">Quero essa promoção</a>
+          {% endif %}{% endwith %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="vazio">
+    <p>{{ loja.nome }} não tem promoção no ar agora.</p>
+    <p><a href="{% url 'inicio' %}">Ver promoções de outros comércios</a></p>
+  </div>
+{% endif %}
+{% endblock %}

@@ -146,3 +146,104 @@ class AdminTests(Base):
     def test_excluir_pelo_admin(self):
         self.client.post(reverse("admin:posts_promocao_delete", args=[self.promo.pk]), {"post": "yes"})
         self.assertFalse(Promocao.objects.filter(pk=self.promo.pk).exists())
+
+
+class VitrineTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.mercado_m = self.comercio("Mercado Maurilândia", whatsapp="(64) 99999-1234", instagram="@mercadom")
+        self.farmacia_t = self.comercio("Farmácia Turvelândia", categoria=self.farmacia, cidade=Cidade.TURVELANDIA)
+        self.arroz = self.promocao(self.mercado_m, "Arroz 5kg", preco=Decimal("22.90"), preco_de=Decimal("27.50"))
+        self.remedio = self.promocao(self.farmacia_t, "Vitamina C", destaque=True)
+        self.vencida = self.promocao(
+            self.mercado_m, "Feijão vencido",
+            inicio=self.agora - timedelta(days=3), fim=self.agora - timedelta(minutes=5),
+        )
+
+    def get(self, **params):
+        return self.client.get(reverse("inicio"), params)
+
+    def test_inicio_publico_mostra_so_promocoes_ativas(self):
+        resp = self.get()
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Arroz 5kg")
+        self.assertContains(resp, "Vitamina C")
+        self.assertNotContains(resp, "Feijão vencido")
+        self.assertContains(resp, "2 promoções valendo agora")
+
+    def test_preco_formatado(self):
+        resp = self.get()
+        self.assertContains(resp, "R$ 22,90")
+        self.assertContains(resp, "R$ 27,50")
+
+    def test_destaque_vem_primeiro_na_pagina(self):
+        html = self.get().content.decode()
+        self.assertLess(html.index("Vitamina C"), html.index("Arroz 5kg"))
+        self.assertIn("Destaque", html)
+
+    def test_filtro_por_cidade(self):
+        resp = self.get(cidade="turvelandia")
+        self.assertContains(resp, "Vitamina C")
+        self.assertNotContains(resp, "Arroz 5kg")
+
+    def test_filtro_por_categoria(self):
+        resp = self.get(categoria="mercado")
+        self.assertContains(resp, "Arroz 5kg")
+        self.assertNotContains(resp, "Vitamina C")
+
+    def test_filtros_combinados_sem_resultado(self):
+        resp = self.get(cidade="turvelandia", categoria="mercado")
+        self.assertContains(resp, "Nenhuma promoção com esses filtros agora.")
+
+    def test_so_mostra_categorias_com_promocao(self):
+        resp = self.get()
+        self.assertContains(resp, "categoria=mercado")
+        self.assertContains(resp, "categoria=farmacia")
+        self.assertNotContains(resp, "categoria=padaria")
+        # Em Turvelândia não tem mercado com promoção
+        resp = self.get(cidade="turvelandia")
+        self.assertNotContains(resp, "categoria=mercado")
+
+    def test_filtro_invalido_e_ignorado(self):
+        resp = self.get(cidade="goiania", categoria="nao-existe")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "2 promoções valendo agora")
+
+    def test_vitrine_vazia(self):
+        Promocao.objects.all().delete()
+        self.assertContains(self.get(), "Nenhuma promoção no ar agora.")
+
+    def test_pagina_do_comercio(self):
+        resp = self.client.get(reverse("comercio", args=[self.mercado_m.slug]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Mercado Maurilândia")
+        self.assertContains(resp, "Arroz 5kg")
+        self.assertNotContains(resp, "Feijão vencido")
+        self.assertContains(resp, "https://wa.me/5564999991234?text=")
+        self.assertContains(resp, "Quero essa promoção")
+        self.assertContains(resp, "https://instagram.com/mercadom")
+        self.assertContains(resp, f'id="promo-{self.arroz.pk}"')
+
+    def test_comercio_sem_whatsapp_nao_mostra_botao(self):
+        resp = self.client.get(reverse("comercio", args=[self.farmacia_t.slug]))
+        self.assertNotContains(resp, "wa.me")
+
+    def test_comercio_inativo_ou_inexistente_da_404(self):
+        self.mercado_m.ativo = False
+        self.mercado_m.save()
+        self.assertEqual(self.client.get(reverse("comercio", args=[self.mercado_m.slug])).status_code, 404)
+        self.assertEqual(self.client.get(reverse("comercio", args=["nao-existe"])).status_code, 404)
+        self.assertNotContains(self.get(), "Arroz 5kg")
+
+    def test_card_leva_para_a_promocao_na_pagina_do_comercio(self):
+        resp = self.get()
+        self.assertContains(resp, f"{self.mercado_m.get_absolute_url()}#promo-{self.arroz.pk}")
+
+    def test_tags_para_compartilhar_no_whatsapp(self):
+        resp = self.client.get(reverse("comercio", args=[self.mercado_m.slug]))
+        self.assertContains(resp, 'property="og:title" content="Mercado Maurilândia no Achou Promo"')
+        self.assertContains(resp, 'property="og:image" content="http://testserver/media/promocoes/')
+
+    def test_nao_precisa_de_login(self):
+        self.client.logout()
+        self.assertEqual(self.get().status_code, 200)

@@ -1,0 +1,117 @@
+{% load static %}<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#e8590c">
+  <title>{% block titulo %}Achou Promo — promoções de Maurilândia e Turvelândia{% endblock %}</title>
+  <meta name="description" content="{% block descricao %}As promoções dos comércios de Maurilândia e Turvelândia num lugar só.{% endblock %}">
+  <meta property="og:site_name" content="Achou Promo">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{% block og_titulo %}Achou Promo{% endblock %}">
+  <meta property="og:description" content="{% block og_descricao %}As promoções dos comércios de Maurilândia e Turvelândia num lugar só.{% endblock %}">
+  {% block og_imagem %}{% endblock %}
+  <style>
+    :root {
+      --marca: #e8590c;
+      --marca-escura: #c2410c;
+      --amarelo: #ffd43b;
+      --texto: #1f2328;
+      --suave: #5b636e;
+      --borda: #e5e7eb;
+      --fundo: #fff7f0;
+      --cartao: #ffffff;
+      --verde: #1f9d55;
+      --raio: 14px;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--fundo); color: var(--texto); line-height: 1.4; }
+    a { color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    .topo { background: var(--marca); color: #fff; padding: 14px 16px 16px; }
+    .topo-dentro { max-width: 1080px; margin: 0 auto; }
+    .marca { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; }
+    .marca .lupa { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--amarelo); color: var(--marca-escura); font-size: 18px; }
+    .slogan { margin: 4px 0 0; font-size: 14px; opacity: .92; }
+
+    main { max-width: 1080px; margin: 0 auto; padding: 16px; }
+
+    .filtros { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 10px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; scrollbar-width: none; }
+    .filtros::-webkit-scrollbar { display: none; }
+    .chip { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--borda); background: #fff; text-decoration: none; font-size: 14px; white-space: nowrap; }
+    .chip.ativo { background: var(--texto); border-color: var(--texto); color: #fff; }
+    .chip small { color: var(--suave); }
+    .chip.ativo small { color: #d0d5dc; }
+
+    .titulo-secao { font-size: 18px; margin: 8px 0 12px; }
+
+    .grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    @media (min-width: 640px) { .grade { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+    @media (min-width: 960px) { .grade { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+    .card { position: relative; display: flex; flex-direction: column; background: var(--cartao); border-radius: var(--raio); overflow: hidden; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04); }
+    .card.destaque { outline: 2px solid var(--amarelo); }
+    .card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #f1f1f1; }
+    .card .corpo { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .card h3 { margin: 0; font-size: 15px; line-height: 1.25; }
+    .card .loja { font-size: 13px; color: var(--suave); }
+    .card .validade { font-size: 12px; color: var(--suave); margin-top: auto; }
+    .selos { position: absolute; top: 8px; left: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .selo { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--amarelo); color: #5c3d00; }
+    .selo.hoje { background: #fff; color: var(--marca-escura); }
+
+    .preco { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 6px; }
+    .preco .de { font-size: 12px; color: var(--suave); text-decoration: line-through; }
+    .preco .por { font-size: 18px; font-weight: 800; color: var(--marca-escura); }
+
+    .vazio { text-align: center; padding: 40px 16px; color: var(--suave); background: #fff; border-radius: var(--raio); }
+    .vazio a { color: var(--marca-escura); font-weight: 600; }
+
+    .botao { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 16px; text-decoration: none; border: 0; }
+    .botao.whatsapp { background: var(--verde); color: #fff; }
+    .botao.secundario { background: #fff; color: var(--texto); border: 1px solid var(--borda); }
+    .botao.largo { width: 100%; }
+
+    .voltar { display: inline-block; margin-bottom: 12px; color: var(--suave); text-decoration: none; font-size: 14px; }
+
+    .perfil { background: #fff; border-radius: var(--raio); padding: 16px; display: grid; gap: 12px; margin-bottom: 20px; }
+    .perfil .cabeca { display: flex; gap: 12px; align-items: center; }
+    .perfil .logo { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--amarelo); color: var(--marca-escura); display: grid; place-items: center; font-weight: 800; font-size: 26px; }
+    .perfil h1 { margin: 0; font-size: 22px; line-height: 1.2; }
+    .perfil .info { color: var(--suave); font-size: 14px; }
+    .perfil p { margin: 0; }
+    .perfil .acoes { display: grid; gap: 8px; }
+    @media (min-width: 640px) { .perfil .acoes { grid-template-columns: auto auto; justify-content: start; } }
+
+    .promo-lista { display: grid; gap: 14px; }
+    @media (min-width: 640px) { .promo-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .promo { background: #fff; border-radius: var(--raio); overflow: hidden; scroll-margin-top: 12px; }
+    .promo.destaque { outline: 2px solid var(--amarelo); }
+    .promo:target { outline: 3px solid var(--marca); }
+    .promo img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .promo .corpo { padding: 12px 14px 14px; display: grid; gap: 8px; }
+    .promo h2 { margin: 0; font-size: 18px; }
+    .promo .descricao { margin: 0; white-space: pre-line; color: #333; }
+    .promo .validade { font-size: 13px; color: var(--suave); }
+
+    .rodape { text-align: center; color: var(--suave); font-size: 13px; padding: 24px 16px 32px; }
+    .rodape a { color: var(--marca-escura); }
+  </style>
+</head>
+<body>
+  <header class="topo">
+    <div class="topo-dentro">
+      <a class="marca" href="{% url 'inicio' %}"><span class="lupa" aria-hidden="true">%</span>Achou Promo</a>
+      <p class="slogan">As promoções de Maurilândia e Turvelândia num lugar só</p>
+    </div>
+  </header>
+  <main>
+    {% block conteudo %}{% endblock %}
+  </main>
+  <footer class="rodape">
+    Achou Promo · <a href="https://instagram.com/achoupromo" rel="noopener">@achoupromo</a>
+  </footer>
+</body>
+</html>
