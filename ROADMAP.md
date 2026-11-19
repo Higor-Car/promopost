@@ -1,41 +1,40 @@
-# Roadmap - PromoPost
+# Achou Promo — Roadmap
 
-Sistema para agendar e publicar promoções de comércios de Maurilândia e Turvelândia no Instagram e no Facebook.
+Plataforma de promoções para os consumidores de Maurilândia e Turvelândia.
+Os comércios parceiros pagam uma mensalidade e os consumidores acessam a vitrine de graça.
+Os dados são cadastrados pelo administrador (via admin do Django).
 
-## Fase 1 - MVP (painel)
-- [x] Projeto Django com app `posts`
-- [x] Models: Comercio, Promocao, Postagem
-- [x] Admin para cadastrar comércios e promoções
-- [x] Tela de listagem e formulário de upload de promoção
-- [x] Validação: fim da promoção depois do início
-- [x] Testes de criação e validação
-- [x] Login (telas protegidas com login_required)
-- [x] Botão de aprovar promoção (rascunho -> aprovada)
-- [x] Editar e excluir promoção
-- [x] README com instruções de uso
+## Meta inicial
+Fechar cerca de 10 comércios antes do lançamento público.
 
-## Fase 2 - Agendador
-- [x] Job que cria as `Postagem` quando a promoção é aprovada
-- [x] Tarefa periódica (cron ou Celery) que muda o status no horário certo
-- [x] Encerrar a promoção automaticamente no fim da data
-- [x] Tela de calendário de postagens
+## Fase 1 — Vitrine pública
+- [ ] Página inicial com as promoções ativas
+- [ ] Filtro por cidade e categoria
+- [ ] Página de cada comércio, com botão de WhatsApp
+- [ ] Layout pensado para celular primeiro
 
-## Fase 3 - Legenda com IA
-- [ ] Gerar legenda sugerida com a API do Claude a partir do título e do comércio
-- [ ] Revisão manual da legenda antes de aprovar
+## Fase 2 — Ajustes nos models
+- [ ] Validade da promoção (some da vitrine quando vence)
+- [ ] Categoria e cidade
+- [ ] Destaque de promoção
+- [ ] Editar e excluir promoção pelo admin
 
-## Fase 4 - Publicação automática (Meta)
-- [ ] Criar app na Meta e pedir revisão cedo (demora)
-- [ ] Política de privacidade e vídeo de demonstração para a revisão
-- [ ] Autorização das páginas dos clientes (sem pedir senha)
-- [ ] Publicação no Instagram e no Facebook pela API oficial
-- [ ] Registro de erros por postagem
+## Fase 3 — No ar
+- [ ] README
+- [ ] Domínio (achoupromo.com.br)
+- [ ] Deploy
+- [ ] QR codes para colar nos comércios parceiros
 
-## Fase 5 - Entrada pelo WhatsApp (futuro)
-- [ ] Receber foto e dados da promoção pelo WhatsApp Business API
-- [ ] Aprovação do cliente por mensagem
+## Fase 4 — Métricas para os comércios
+- [ ] Contagem de visualizações e cliques por promoção e por comércio
+- [ ] Resumo simples para o dono do comércio ver o resultado
 
-## Negócio (fora do código)
-- [ ] Piloto com 5 a 10 comércios
-- [ ] Tabela de pacotes (básico, semanal, diário)
-- [ ] Roteiro de visita para apresentar o serviço
+## Fase 5 — Instagram (@achoupromo)
+- [ ] Gerar a imagem "Promoções do dia" a partir da plataforma
+- [ ] Avaliar publicação automática via API da Meta
+
+## Divulgação (fora do código)
+- Cada comércio parceiro divulga no próprio perfil e no balcão
+- QR code nas lojas
+- Link da plataforma em grupos de WhatsApp da cidade
+- Perfil no Instagram com conteúdo diário
