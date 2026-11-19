@@ -22,8 +22,8 @@ Fechar cerca de 10 comércios antes do lançamento público.
 ## Fase 3 — No ar
 - [x] README
 - [ ] Domínio (achoupromo.com.br)
-- [ ] Deploy
-- [ ] QR codes para colar nos comércios parceiros
+- [x] Deploy (AWS Lightsail)
+- [x] QR codes para colar nos comércios parceiros
 
 ## Fase 4 — Métricas para os comércios
 - [ ] Contagem de visualizações e cliques por promoção e por comércio
