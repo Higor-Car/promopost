@@ -249,3 +249,26 @@ class VitrineTests(Base):
     def test_nao_precisa_de_login(self):
         self.client.logout()
         self.assertEqual(self.get().status_code, 200)
+
+
+@override_settings(SITE_URL="https://achoupromo.com.br")
+class QrCodeTests(Base):
+    def test_acao_imprime_um_cartao_por_comercio(self):
+        admin = get_user_model().objects.create_superuser("admin", password="senha-teste-123")
+        self.client.force_login(admin)
+        lojas = [self.comercio("Mercado Um"), self.comercio("Padaria Dois")]
+        resp = self.client.post(
+            reverse("admin:posts_comercio_changelist"),
+            {"action": "imprimir_qrcodes", "_selected_action": [loja.pk for loja in lojas]},
+        )
+        self.assertEqual(resp.status_code, 200)
+        html = resp.content.decode()
+        self.assertEqual(html.count("<svg"), 2)
+        self.assertIn("https://achoupromo.com.br/c/mercado-um/", html)
+        self.assertIn("Padaria Dois", html)
+
+    def test_qr_aponta_para_o_endereco(self):
+        from .qr import qr_svg
+
+        svg = qr_svg("https://achoupromo.com.br/c/mercado-um/?origem=qr")
+        self.assertTrue(svg.startswith("<svg") or svg.startswith("<?xml"))

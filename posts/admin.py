@@ -1,9 +1,12 @@
 from django.contrib import admin, messages
 from django.db.models import Count, Q
+from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
 from .models import Categoria, Comercio, Promocao
+from .qr import qr_svg, url_publica
 
 admin.site.site_header = "Achou Promo — administração"
 admin.site.site_title = "Achou Promo"
@@ -24,6 +27,7 @@ class ComercioAdmin(admin.ModelAdmin):
     list_filter = ("cidade", "categoria", "ativo", "plano")
     search_fields = ("nome", "instagram", "whatsapp")
     prepopulated_fields = {"slug": ("nome",)}
+    actions = ("imprimir_qrcodes",)
     fieldsets = (
         (None, {"fields": ("nome", "slug", "categoria", "cidade", "ativo")}),
         ("Na vitrine", {"fields": ("logo", "descricao", "endereco", "whatsapp", "instagram")}),
@@ -44,6 +48,23 @@ class ComercioAdmin(admin.ModelAdmin):
     @admin.display(description="promoções no ar", ordering="_no_ar")
     def promocoes_no_ar(self, obj):
         return obj._no_ar
+
+    @admin.action(description="Imprimir QR codes (para colar na loja)")
+    def imprimir_qrcodes(self, request, queryset):
+        cartoes = []
+        for loja in queryset.order_by("nome"):
+            endereco = url_publica(loja.get_absolute_url())
+            cartoes.append({
+                "chamada": "Veja as promoções desta loja",
+                "loja": loja.nome,
+                "endereco": endereco,
+                "svg": qr_svg(endereco + "?origem=qr"),
+            })
+        return render(
+            request,
+            "admin/posts/qrcodes.html",
+            {"cartoes": cartoes, "voltar": reverse("admin:posts_comercio_changelist")},
+        )
 
 
 class SituacaoFilter(admin.SimpleListFilter):

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR codes — Achou Promo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #1f2328; background: #f3f4f6; }
+    .barra { padding: 12px 16px; background: #fff; border-bottom: 1px solid #e5e7eb; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .barra button { background: #e8590c; color: #fff; border: 0; padding: 10px 16px; border-radius: 8px; font: inherit; font-weight: 700; cursor: pointer; }
+    .barra a { color: #c2410c; }
+    .folha { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; justify-content: center; }
+    .cartao { width: 10cm; min-height: 14cm; background: #fff; border: 2px dashed #d0d5dc; border-radius: 12px; padding: 0.8cm 0.7cm; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.3cm; break-inside: avoid; page-break-inside: avoid; }
+    .marca { font-weight: 800; font-size: 26px; color: #e8590c; letter-spacing: -0.5px; }
+    .chamada { font-size: 17px; font-weight: 700; line-height: 1.25; }
+    .qr { width: 6.6cm; height: 6.6cm; }
+    .qr svg { width: 100%; height: 100%; }
+    .loja { font-size: 15px; font-weight: 700; }
+    .endereco { font-size: 12px; color: #5b636e; word-break: break-all; }
+    .dica { font-size: 12px; color: #5b636e; }
+    @media print {
+      body { background: #fff; }
+      .barra { display: none; }
+      .folha { padding: 0; gap: 0.5cm; justify-content: flex-start; }
+      .cartao { border-color: #bbb; }
+      @page { size: A4; margin: 1cm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="barra">
+    <button type="button" onclick="window.print()">Imprimir</button>
+    <span>{{ cartoes|length }} cartão{{ cartoes|length|pluralize:",ões" }} · cabem 2 por folha A4 · recorte na linha tracejada</span>
+    <a href="{{ voltar }}">Voltar ao admin</a>
+  </div>
+  <div class="folha">
+    {% for c in cartoes %}
+      <div class="cartao">
+        <div class="marca">Achou Promo</div>
+        <div class="chamada">{{ c.chamada }}</div>
+        <div class="qr">{{ c.svg }}</div>
+        {% if c.loja %}<div class="loja">{{ c.loja }}</div>{% endif %}
+        <div class="dica">Aponte a câmera do celular</div>
+        <div class="endereco">{{ c.endereco }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
