@@ -8,78 +8,60 @@
 
 {% block conteudo %}
 {% if not filtrando %}
-<section class="hero anima">
+<section class="hero">
   <div class="hero-texto">
-    <h1>As promoções de <span>{% if cidade %}{{ cidade_nome }}{% else %}Maurilândia e Turvelândia{% endif %}</span> num lugar só</h1>
+    <h1>As promoções de <span>{% if cidade %}{{ cidade_nome }}{% else %}Maurilândia e Turvelândia{% endif %}</span> em um só lugar</h1>
     <p>Veja as ofertas dos comércios da cidade e chame a loja direto no WhatsApp.</p>
-    {% if total %}<span class="contador"><b>{{ total }}</b> oferta{{ total|pluralize }} valendo agora</span>{% endif %}
+    {% if total %}<p class="contador">{{ total }} oferta{{ total|pluralize }} valendo agora</p>{% endif %}
   </div>
   <div class="hero-ilustra">{% include "vitrine/ilustracoes/sacola.svg" %}</div>
 </section>
-
-<ol class="passos anima" style="--i: 1" aria-label="Como funciona">
-  <li><span aria-hidden="true">🔎</span>Ache a promoção</li>
-  <li><span aria-hidden="true">💬</span>Chame a loja no WhatsApp</li>
-  <li><span aria-hidden="true">🛍️</span>Aproveite na loja</li>
-</ol>
 {% endif %}
 
 <div class="filtros">
   <nav class="segmento" aria-label="Cidade">
-    <a class="{% if not cidade %}ativo{% endif %}" href="{% querystring cidade=None %}">Todas</a>
+    <a class="{% if not cidade %}ativo{% endif %}" href="{% querystring cidade=None %}" data-suave>Todas</a>
     {% for valor, nome in cidades %}
-      <a class="{% if cidade == valor %}ativo{% endif %}" href="{% querystring cidade=valor %}">{{ nome }}</a>
+      <a class="{% if cidade == valor %}ativo{% endif %}" href="{% querystring cidade=valor %}" data-suave>{{ nome }}</a>
     {% endfor %}
   </nav>
-  {% if filtrando and categorias %}
+  {% if categorias %}
   <nav class="chips" aria-label="Categoria">
-    <a class="chip{% if not categoria %} ativo{% endif %}" href="{% querystring categoria=None %}">Tudo</a>
+    <a class="chip{% if not categoria %} ativo{% endif %}" href="{% querystring categoria=None %}" data-suave>Tudo</a>
     {% for c in categorias %}
-      <a class="chip{% if categoria == c %} ativo{% endif %}" href="{% querystring categoria=c.slug %}">{% if c.icone %}<span aria-hidden="true">{{ c.icone }}</span>{% endif %}{{ c.nome }} <small>{{ c.total }}</small></a>
+      <a class="chip{% if categoria == c %} ativo{% endif %}" href="{% querystring categoria=c.slug %}" data-suave>{{ c.nome }}</a>
     {% endfor %}
+    {% if mais_categorias %}<a class="chip mais" href="{% url 'categorias' %}">Mais</a>{% endif %}
   </nav>
   {% endif %}
 </div>
 
+<div id="lista">
 {% if busca %}
-  <p class="resultado-busca">{{ total }} resultado{{ total|pluralize }} para <strong>"{{ busca }}"</strong> · <a href="{% querystring q=None %}">limpar busca</a></p>
-{% endif %}
-
-{% if not filtrando and categorias %}
-  <div class="secao"><h2>O que você procura?</h2><a href="{% url 'categorias' %}">Ver todas</a></div>
-  <nav class="tiles" aria-label="Categorias">
-    {% for c in categorias %}
-      <a class="tile anima" style="--i: {{ forloop.counter0 }}" href="{% querystring categoria=c.slug %}">
-        <span class="emoji" aria-hidden="true">{{ c.icone|default:"🏷️" }}</span>
-        <strong>{{ c.nome }}</strong>
-        <small>{{ c.total }} oferta{{ c.total|pluralize }}</small>
-      </a>
-    {% endfor %}
-  </nav>
+  <p class="resultado-busca">{{ total }} resultado{{ total|pluralize }} para <strong>"{{ busca }}"</strong> · <a href="{% querystring q=None %}" data-suave>limpar busca</a></p>
 {% endif %}
 
 {% if destaques %}
-  <div class="secao"><h2>⭐ Em destaque</h2></div>
+  <div class="secao"><h2>Em destaque</h2></div>
   <div class="carrossel">
     {% for p in destaques %}<div class="anima" style="--i: {{ forloop.counter0 }}">{% include "vitrine/_card.html" %}</div>{% endfor %}
   </div>
 {% endif %}
 
 {% if acabando %}
-  <div class="secao"><h2>⏰ Acaba hoje</h2><span>Corra que dá tempo</span></div>
+  <div class="secao"><h2>Acaba hoje</h2></div>
   <div class="carrossel pequeno">
     {% for p in acabando %}<div class="anima" style="--i: {{ forloop.counter0 }}">{% include "vitrine/_card.html" %}</div>{% endfor %}
   </div>
 {% endif %}
 
 {% if lojas %}
-  <div class="secao"><h2>🏪 Lojas parceiras</h2><a href="{% url 'lojas' %}">Ver todas</a></div>
+  <div class="secao"><h2>Lojas parceiras</h2><a href="{% url 'lojas' %}">Ver todas</a></div>
   <div class="lojas-faixa">
     {% for loja in lojas %}
-      <a class="loja-mini anima" style="--i: {{ forloop.counter0 }}" href="{{ loja.get_absolute_url }}">
+      <a class="loja-mini" href="{{ loja.get_absolute_url }}">
         {% include "vitrine/_avatar.html" %}
         <span>{{ loja.nome }}</span>
-        <small>{{ loja.no_ar }} oferta{{ loja.no_ar|pluralize }}</small>
       </a>
     {% endfor %}
   </div>
@@ -87,25 +69,25 @@
 
 {% if promocoes %}
   <div class="secao">
-    <h2>{% if destaques or acabando %}Mais promoções{% elif categoria %}{{ categoria.icone }} {{ categoria.nome }}{% if cidade %} em {{ cidade_nome }}{% endif %}{% elif busca %}Promoções encontradas{% else %}Todas as promoções{% endif %}</h2>
+    <h2>{% if destaques or acabando %}Mais promoções{% elif categoria %}{{ categoria.nome }}{% if cidade %} em {{ cidade_nome }}{% endif %}{% elif busca %}Promoções encontradas{% else %}Todas as promoções{% endif %}</h2>
     {% if not busca %}<span>{{ promocoes|length }}</span>{% endif %}
   </div>
   <div class="grade">
-    {% for p in promocoes %}<div class="anima" style="--i: {% if forloop.counter0 < 8 %}{{ forloop.counter0 }}{% else %}0{% endif %}">{% include "vitrine/_card.html" %}</div>{% endfor %}
+    {% for p in promocoes %}<div class="anima" style="--i: {% if forloop.counter0 < 6 %}{{ forloop.counter0 }}{% else %}0{% endif %}">{% include "vitrine/_card.html" %}</div>{% endfor %}
   </div>
 {% elif not destaques and not acabando %}
   <div class="vazio" style="margin-top: 20px">
-    {% include "vitrine/ilustracoes/caixa-vazia.svg" %}
     {% if filtrando or cidade %}
       <h2>Nada por aqui{% if busca %} para "{{ busca }}"{% endif %}</h2>
       <p>Tente outra palavra, outra categoria ou outra cidade.</p>
-      <a class="botao claro pequeno" href="{% url 'inicio' %}">Ver todas as promoções</a>
+      <a class="botao claro pequeno" href="{% url 'inicio' %}" data-suave>Ver todas as promoções</a>
     {% else %}
       <h2>Nenhuma promoção no ar agora</h2>
       <p>Novas ofertas entram todo dia. Volte daqui a pouco!</p>
     {% endif %}
   </div>
 {% endif %}
+</div>
 
 {% if not filtrando %}
   {% include "vitrine/_chamada_lojista.html" %}

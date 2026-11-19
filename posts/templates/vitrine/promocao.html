@@ -14,7 +14,6 @@
   <div class="foto">
     <img src="{{ promo.imagem.url }}" alt="{{ promo.titulo }}">
     {% if promo.desconto %}<span class="selo desconto">-{{ promo.desconto }}%</span>{% endif %}
-    {% if promo.destaque %}<span class="selo destaque">★ Destaque</span>{% endif %}
   </div>
 
   <div class="promo-info">
@@ -40,7 +39,7 @@
 
     <a class="loja-cartao" href="{{ loja.get_absolute_url }}">
       {% include "vitrine/_avatar.html" %}
-      <div><strong>{{ loja.nome }}</strong><small>{% if loja.categoria.icone %}{{ loja.categoria.icone }} {% endif %}{{ loja.categoria.nome }} · {{ loja.get_cidade_display }}</small></div>
+      <div><strong>{{ loja.nome }}</strong><small>{{ loja.categoria.nome }} · {{ loja.get_cidade_display }}</small></div>
       {% include "vitrine/icones/seta.svg" %}
     </a>
   </div>

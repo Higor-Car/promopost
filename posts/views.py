@@ -40,11 +40,13 @@ def inicio(request):
     if cidade:
         promocoes = [p for p in promocoes if p.comercio.cidade == cidade]
 
-    # Categorias com promoção no ar (na cidade escolhida), na ordem do admin.
+    # Categorias com promoção no ar (na cidade escolhida): só as 6 com mais ofertas,
+    # para não encher a tela; as outras ficam na página Categorias.
     contagem = Counter(p.comercio.categoria_id for p in promocoes)
     categorias = list(Categoria.objects.filter(pk__in=contagem))
     for c in categorias:
         c.total = contagem[c.pk]
+    categorias.sort(key=lambda c: (-c.total, c.ordem, c.nome))
 
     categoria = None
     slug_categoria = request.GET.get("categoria", "")
@@ -52,6 +54,12 @@ def inicio(request):
         categoria = Categoria.objects.filter(slug=slug_categoria).first()
     if categoria:
         promocoes = [p for p in promocoes if p.comercio.categoria_id == categoria.pk]
+
+    mais_categorias = len(categorias) > 6
+    visiveis = categorias[:6]
+    if categoria and categoria not in visiveis and categoria in categorias:
+        visiveis.append(categoria)  # a escolhida sempre aparece
+    categorias = visiveis
 
     if busca:
         palavras = normalizar(busca).split()
@@ -83,6 +91,7 @@ def inicio(request):
             "cidade": cidade,
             "cidade_nome": Cidade(cidade).label if cidade else "",
             "categorias": categorias,
+            "mais_categorias": mais_categorias,
             "categoria": categoria,
             "busca": busca,
             "filtrando": filtrando,
@@ -120,7 +129,9 @@ def categorias(request):
     lista = list(Categoria.objects.annotate(lojas=Count("comercios", filter=Q(comercios__ativo=True))))
     for c in lista:
         c.total = contagem.get(c.pk, 0)
-    lista.sort(key=lambda c: (c.total == 0, c.ordem, c.nome))
+    # Só categorias que têm loja ou oferta; as vazias só poluem a tela.
+    lista = [c for c in lista if c.total or c.lojas]
+    lista.sort(key=lambda c: (c.total == 0, -c.total, c.ordem, c.nome))
     return render(request, "vitrine/categorias.html", {"menu": "categorias", "categorias": lista})
 
 

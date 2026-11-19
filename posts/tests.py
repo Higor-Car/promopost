@@ -179,7 +179,9 @@ class VitrineTests(Base):
         self.assertContains(resp, "Vitamina C")
         self.assertNotContains(resp, "Feijão vencido")
         self.assertEqual(resp.context["total"], 2)
-        self.assertContains(resp, "<b>2</b> ofertas valendo agora", html=True)
+        self.assertContains(resp, "2 ofertas valendo agora")
+        self.assertContains(resp, "em um só lugar")
+        self.assertNotContains(resp, "num lugar só")
 
     def test_preco_e_desconto(self):
         resp = self.get()
@@ -208,12 +210,14 @@ class VitrineTests(Base):
         resp = self.get(cidade="turvelandia", categoria="mercado")
         self.assertContains(resp, "Tente outra palavra, outra categoria ou outra cidade.")
 
-    def test_so_mostra_categorias_com_promocao_e_icone(self):
+    def test_so_mostra_categorias_com_promocao_sem_emoji(self):
         resp = self.get()
         self.assertContains(resp, "categoria=mercado")
         self.assertContains(resp, "categoria=farmacia")
         self.assertNotContains(resp, "categoria=padaria")
-        self.assertContains(resp, "🛒")
+        html = resp.content.decode()
+        emojis = [c for c in html if 0x1F000 <= ord(c) <= 0x1FAFF or 0x2600 <= ord(c) <= 0x27BF]
+        self.assertEqual(emojis, [])
         resp = self.get(cidade="turvelandia")
         self.assertNotContains(resp, "categoria=mercado")
 
@@ -338,10 +342,10 @@ class EstruturaTests(Base):
 
     def test_inicio_tem_secoes(self):
         resp = self.client.get(reverse("inicio"))
-        self.assertContains(resp, "O que você procura?")
         self.assertContains(resp, "Em destaque")
         self.assertContains(resp, "Lojas parceiras")
-        self.assertContains(resp, "Conheça as vantagens")
+        self.assertContains(resp, "Tem um comércio na cidade?")
+        self.assertContains(resp, "data-suave")  # cidade/categoria trocam sem recarregar
         if self.pao.acaba_hoje:
             self.assertContains(resp, "Acaba hoje")
             self.assertIn(self.pao, resp.context["acabando"])
@@ -368,13 +372,30 @@ class EstruturaTests(Base):
         self.assertContains(resp, "?categoria=mercado")
         primeira = resp.context["categorias"][0]
         self.assertGreater(primeira.total, 0)  # categorias com oferta primeiro
-        self.assertContains(resp, "Sem oferta agora")
+        # Categorias sem loja nem oferta não aparecem
+        self.assertNotContains(resp, "Roupas e calçados")
+        self.assertNotContains(resp, "?categoria=pet")
+
+    def test_inicio_mostra_no_maximo_6_categorias(self):
+        slugs = ["padaria", "acougue", "pet", "beleza", "servicos", "outros", "casa-e-construcao"]
+        for i, slug in enumerate(slugs):
+            loja = self.comercio(f"Loja {slug}", categoria=Categoria.objects.get(slug=slug))
+            for _ in range(i + 1):
+                self.promocao(loja, f"Oferta {slug}")
+        resp = self.client.get(reverse("inicio"))
+        self.assertEqual(len(resp.context["categorias"]), 6)
+        self.assertTrue(resp.context["mais_categorias"])
+        self.assertContains(resp, f'href="{reverse("categorias")}">Mais</a>')
+        # a categoria escolhida aparece mesmo que não esteja entre as 6 com mais ofertas
+        resp = self.client.get(reverse("inicio"), {"categoria": "farmacia"})
+        self.assertIn("farmacia", [c.slug for c in resp.context["categorias"]])
 
     def test_pagina_para_lojistas(self):
         resp = self.client.get(reverse("para_lojistas"))
-        self.assertContains(resp, "Por que anunciar")
-        self.assertContains(resp, "Cliente chama direto no WhatsApp")
-        self.assertContains(resp, "Perguntas frequentes")
+        self.assertContains(resp, "O que sua loja ganha")
+        self.assertContains(resp, "Clientes no seu WhatsApp")
+        self.assertContains(resp, "Dúvidas")
+        self.assertContains(resp, "Como funciona")
         self.assertFalse(resp.context["mostrar_numeros"])  # poucos números ainda
         self.assertNotContains(resp, "lojas parceiras</span>")
 
@@ -401,7 +422,8 @@ class EstruturaTests(Base):
 
     def test_capa_da_loja(self):
         resp = self.client.get(self.loja1.get_absolute_url())
-        self.assertContains(resp, 'class="padrao"')  # sem foto: capa desenhada
+        self.assertNotContains(resp, "/media/comercios/capas/")  # sem foto: só a cor
+        self.assertContains(resp, "--cor:")
         self.loja1.capa = imagem_falsa("capa.png")
         self.loja1.save()
         resp = self.client.get(self.loja1.get_absolute_url())

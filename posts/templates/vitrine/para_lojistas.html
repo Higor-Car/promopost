@@ -1,114 +1,65 @@
 {% extends "vitrine/base.html" %}
 
-{% block titulo %}Anuncie no Achou Promo — vitrine de promoções de Maurilândia e Turvelândia{% endblock %}
-{% block descricao %}Coloque as promoções da sua loja na vitrine da cidade. Clientes chamam direto no WhatsApp e você acompanha os resultados.{% endblock %}
+{% block titulo %}Anuncie no Achou Promo — promoções de Maurilândia e Turvelândia{% endblock %}
+{% block descricao %}Coloque as promoções da sua loja no Achou Promo. Clientes chamam direto no WhatsApp e você acompanha os resultados.{% endblock %}
 {% block og_titulo %}Anuncie sua loja no Achou Promo{% endblock %}
-{% block og_descricao %}Suas promoções na vitrine de Maurilândia e Turvelândia, com clientes chamando direto no WhatsApp.{% endblock %}
+{% block og_descricao %}Suas promoções para toda a cidade, com clientes chamando direto no WhatsApp.{% endblock %}
 {% block busca %}{% endblock %}
 
 {% block conteudo %}
-<section class="lp-hero anima">
-  <span class="etiqueta">Para mercados, lojas e serviços</span>
-  <h1>Sua loja na vitrine de promoções da cidade</h1>
-  <p>O Achou Promo reúne as ofertas de Maurilândia e Turvelândia num lugar só. Quem procura promoção encontra a sua e chama você direto no WhatsApp.</p>
-  <div class="botoes">
-    {% if LINK_ANUNCIE %}
-      <a class="botao whats pulsa" href="{{ LINK_ANUNCIE }}" target="_blank" rel="noopener">{% include "vitrine/icones/whatsapp.svg" %} Quero anunciar</a>
-    {% elif INSTAGRAM_SITE %}
-      <a class="botao branco" href="https://instagram.com/{{ INSTAGRAM_SITE }}" target="_blank" rel="noopener">{% include "vitrine/icones/instagram.svg" %} Fale com a gente</a>
-    {% endif %}
-    <a class="botao branco" href="#vantagens">Ver as vantagens</a>
-  </div>
-  <div class="ilustra">{% include "vitrine/ilustracoes/celular.svg" %}</div>
+<section class="lp-hero">
+  <p class="etiqueta">Para lojistas</p>
+  <h1>Suas promoções para toda a cidade</h1>
+  <p>Quem procura oferta em Maurilândia e Turvelândia encontra a sua e chama você direto no WhatsApp.</p>
+  {% if LINK_ANUNCIE %}
+    <a class="botao whats" href="{{ LINK_ANUNCIE }}" target="_blank" rel="noopener">{% include "vitrine/icones/whatsapp.svg" %} Quero anunciar</a>
+  {% elif INSTAGRAM_SITE %}
+    <a class="botao marca" href="https://instagram.com/{{ INSTAGRAM_SITE }}" target="_blank" rel="noopener">Fale com a gente</a>
+  {% endif %}
 </section>
 
 {% if mostrar_numeros %}
-<div class="numeros anima">
+<div class="numeros">
   <div><b>{{ numeros.lojas }}</b><span>lojas parceiras</span></div>
-  <div><b>{{ numeros.promocoes }}</b><span>ofertas no ar agora</span></div>
-  <div><b>{{ numeros.visitas|floatformat:"g" }}</b><span>visitas nos últimos 30 dias</span></div>
-  <div><b>{{ numeros.whatsapp|floatformat:"g" }}</b><span>chamadas no WhatsApp em 30 dias</span></div>
+  <div><b>{{ numeros.visitas|floatformat:"g" }}</b><span>visitas em 30 dias</span></div>
+  <div><b>{{ numeros.whatsapp|floatformat:"g" }}</b><span>chamadas no WhatsApp</span></div>
 </div>
 {% endif %}
 
-<div class="secao" id="vantagens"><h2>Por que anunciar</h2></div>
+<div class="secao"><h2>O que sua loja ganha</h2></div>
 <div class="vantagens">
   <div class="vantagem anima" style="--i: 0">
-    <span class="icone verde">{% include "vitrine/icones/whatsapp.svg" %}</span>
-    <h3>Cliente chama direto no WhatsApp</h3>
-    <p>Cada promoção tem o botão "Quero essa promoção", que abre o seu WhatsApp com a mensagem pronta. Sem intermediário.</p>
+    <span class="icone">{% include "vitrine/icones/whatsapp.svg" %}</span>
+    <div><h3>Clientes no seu WhatsApp</h3><p>Cada oferta tem um botão que abre a conversa com a sua loja.</p></div>
   </div>
   <div class="vantagem anima" style="--i: 1">
     <span class="icone">{% include "vitrine/icones/loja.svg" %}</span>
-    <h3>Uma página só da sua loja</h3>
-    <p>Com sua capa, logo, horário, endereço e "Como chegar" no mapa. Um link fácil de mandar para os clientes.</p>
+    <div><h3>Página própria e QR code</h3><p>Sua loja com endereço, horário e um QR code para o balcão.</p></div>
   </div>
   <div class="vantagem anima" style="--i: 2">
-    <span class="icone azul">{% include "vitrine/icones/grafico.svg" %}</span>
-    <h3>Você vê o resultado</h3>
-    <p>Um link só seu mostra quantas pessoas viram suas ofertas, abriram e chamaram no WhatsApp.</p>
-  </div>
-  <div class="vantagem anima" style="--i: 3">
-    <span class="icone">{% include "vitrine/icones/qr.svg" %}</span>
-    <h3>QR code para o balcão</h3>
-    <p>Um cartão com QR code para colar na loja: o cliente aponta a câmera e vê todas as suas promoções.</p>
-  </div>
-  <div class="vantagem anima" style="--i: 4">
-    <span class="icone roxo">{% include "vitrine/icones/instagram.svg" %}</span>
-    <h3>Divulgação no Instagram</h3>
-    <p>As ofertas em destaque entram nas "Promoções do dia" do Achou Promo.</p>
-  </div>
-  <div class="vantagem anima" style="--i: 5">
-    <span class="icone verde">{% include "vitrine/icones/coracao.svg" %}</span>
-    <h3>Sem complicação</h3>
-    <p>Não precisa de site nem de aplicativo. Você manda as ofertas e a gente coloca no ar, com foto e preço.</p>
+    <span class="icone">{% include "vitrine/icones/grafico.svg" %}</span>
+    <div><h3>Resultado na palma da mão</h3><p>Um link só seu mostra quantas pessoas viram e chamaram.</p></div>
   </div>
 </div>
 
 <div class="secao"><h2>Como funciona</h2></div>
 <ol class="etapas">
-  <li class="anima" style="--i: 0"><strong>Você manda as ofertas</strong><p>Pelo WhatsApp: foto do produto, preço e até quando vale.</p></li>
-  <li class="anima" style="--i: 1"><strong>A gente publica</strong><p>Sua promoção entra na vitrine e na página da sua loja, e sai sozinha quando vence.</p></li>
-  <li class="anima" style="--i: 2"><strong>Os clientes chamam você</strong><p>E você acompanha pelo seu link de resultado quantas pessoas viram e chamaram.</p></li>
+  <li class="anima" style="--i: 0">Você manda as ofertas pelo WhatsApp: foto, preço e validade.</li>
+  <li class="anima" style="--i: 1">A gente publica, e a oferta sai sozinha quando vence.</li>
+  <li class="anima" style="--i: 2">Os clientes chamam você, e você acompanha os resultados.</li>
 </ol>
 
-<div class="secao"><h2>Seu relatório de resultados</h2></div>
-<section class="exemplo-relatorio anima">
-  <div>
-    <h3>Saiba se está valendo a pena</h3>
-    <p>Você recebe um link só seu, sem senha, que mostra o desempenho da loja nos últimos 7, 30 ou 90 dias e de cada promoção.</p>
-    <p class="nota">Exemplo ilustrativo. Os números reais aparecem no link da sua loja.</p>
-  </div>
-  <div>
-    <div class="mini-kpis" aria-hidden="true">
-      <div class="verde"><b>68</b><span>Chamadas no WhatsApp</span></div>
-      <div><b>582</b><span>Visitas</span></div>
-      <div><b>2.605</b><span>Vezes que apareceu</span></div>
-      <div><b>48</b><span>Acessos pelo QR code</span></div>
-    </div>
-    <div class="barras" aria-hidden="true">
-      <i style="height: 40%"></i><i style="height: 62%"></i><i style="height: 48%"></i><i style="height: 75%"></i><i style="height: 55%"></i><i style="height: 88%"></i><i style="height: 70%"></i><i style="height: 95%"></i><i style="height: 64%"></i><i style="height: 80%"></i><i style="height: 58%"></i><i style="height: 100%"></i>
-    </div>
-  </div>
-</section>
-
-<div class="secao"><h2>Perguntas frequentes</h2></div>
+<div class="secao"><h2>Dúvidas</h2></div>
 <div class="faq">
-  <details class="anima"><summary>Preciso ter site ou saber mexer com internet?</summary><p>Não. Você só manda as ofertas pelo WhatsApp, e a gente cuida do resto.</p></details>
-  <details class="anima"><summary>Quanto custa?</summary><p>É uma mensalidade fixa, sem contrato de fidelidade. Fale com a gente para ver o plano que combina com a sua loja.</p></details>
-  <details class="anima"><summary>Posso trocar as promoções?</summary><p>Sim. Cada promoção tem data para entrar e para sair do ar, e você pode mandar ofertas novas sempre que quiser.</p></details>
-  <details class="anima"><summary>O cliente paga alguma coisa?</summary><p>Não. Para quem compra, o Achou Promo é grátis e não precisa de cadastro.</p></details>
-  <details class="anima"><summary>Como sei se está funcionando?</summary><p>Pelo seu link de resultado, que mostra visitas, cliques no WhatsApp e acessos pelo QR code da loja.</p></details>
+  <details><summary>Preciso ter site ou saber mexer com internet?</summary><p>Não. Você só manda as ofertas pelo WhatsApp e a gente cuida do resto.</p></details>
+  <details><summary>Quanto custa?</summary><p>Uma mensalidade fixa, sem fidelidade. Fale com a gente para ver o plano da sua loja.</p></details>
+  <details><summary>O cliente paga alguma coisa?</summary><p>Não. Para quem compra é grátis e não precisa de cadastro.</p></details>
 </div>
 
-<section class="chamada-lojista anima">
-  <h2>Pronto para aparecer <span>para toda a cidade?</span></h2>
-  <p>Coloque suas promoções no Achou Promo e receba clientes pelo WhatsApp.</p>
-  {% if LINK_ANUNCIE %}
-    <a class="botao whats" href="{{ LINK_ANUNCIE }}" target="_blank" rel="noopener">{% include "vitrine/icones/whatsapp.svg" %} Quero anunciar</a>
-  {% elif INSTAGRAM_SITE %}
-    <a class="botao marca" href="https://instagram.com/{{ INSTAGRAM_SITE }}" target="_blank" rel="noopener">Fale com a gente no Instagram</a>
-  {% endif %}
-  {% include "vitrine/ilustracoes/megafone.svg" %}
+{% if LINK_ANUNCIE %}
+<section class="chamada-lojista">
+  <div><h2>Vamos colocar sua loja no ar?</h2><p>Chame a gente no WhatsApp.</p></div>
+  <a class="botao whats pequeno" href="{{ LINK_ANUNCIE }}" target="_blank" rel="noopener">{% include "vitrine/icones/whatsapp.svg" %} Quero anunciar</a>
 </section>
+{% endif %}
 {% endblock %}

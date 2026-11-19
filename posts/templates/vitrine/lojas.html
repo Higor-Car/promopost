@@ -13,16 +13,16 @@
 
 <div class="filtros" style="margin-top: 0">
   <nav class="segmento" aria-label="Cidade">
-    <a class="{% if not cidade %}ativo{% endif %}" href="{% querystring cidade=None %}">Todas</a>
+    <a class="{% if not cidade %}ativo{% endif %}" href="{% querystring cidade=None %}" data-suave>Todas</a>
     {% for valor, nome in cidades %}
-      <a class="{% if cidade == valor %}ativo{% endif %}" href="{% querystring cidade=valor %}">{{ nome }}</a>
+      <a class="{% if cidade == valor %}ativo{% endif %}" href="{% querystring cidade=valor %}" data-suave>{{ nome }}</a>
     {% endfor %}
   </nav>
   {% if categorias|length > 1 or categoria %}
   <nav class="chips" aria-label="Categoria">
-    <a class="chip{% if not categoria %} ativo{% endif %}" href="{% querystring categoria=None %}">Todas</a>
+    <a class="chip{% if not categoria %} ativo{% endif %}" href="{% querystring categoria=None %}" data-suave>Todas</a>
     {% for c in categorias %}
-      <a class="chip{% if categoria == c %} ativo{% endif %}" href="{% querystring categoria=c.slug %}">{% if c.icone %}<span aria-hidden="true">{{ c.icone }}</span>{% endif %}{{ c.nome }}</a>
+      <a class="chip{% if categoria == c %} ativo{% endif %}" href="{% querystring categoria=c.slug %}" data-suave>{{ c.nome }}</a>
     {% endfor %}
   </nav>
   {% endif %}
@@ -38,7 +38,7 @@
         </div>
         <div class="corpo">
           <strong>{{ loja.nome }}</strong>
-          <small>{% if loja.categoria.icone %}{{ loja.categoria.icone }} {% endif %}{{ loja.categoria.nome }} · {{ loja.get_cidade_display }}</small>
+          <small>{{ loja.categoria.nome }} · {{ loja.get_cidade_display }}</small>
           {% if loja.no_ar %}
             <span class="contagem">{{ loja.no_ar }} oferta{{ loja.no_ar|pluralize }} agora</span>
           {% else %}
@@ -50,12 +50,10 @@
   </div>
 {% else %}
   <div class="vazio" style="margin-top: 16px">
-    {% include "vitrine/ilustracoes/caixa-vazia.svg" %}
     <h2>Nenhuma loja por aqui ainda</h2>
     <p>Novos comércios estão chegando.</p>
     <a class="botao claro pequeno" href="{% url 'lojas' %}">Ver todas as lojas</a>
   </div>
 {% endif %}
 
-{% include "vitrine/_chamada_lojista.html" %}
 {% endblock %}

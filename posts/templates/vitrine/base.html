@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff">
   <script>document.documentElement.classList.add("js")</script>
   <title>{% block titulo %}Achou Promo — promoções de Maurilândia e Turvelândia{% endblock %}</title>
-  <meta name="description" content="{% block descricao %}As promoções dos comércios de Maurilândia e Turvelândia num lugar só.{% endblock %}">
+  <meta name="description" content="{% block descricao %}As promoções dos comércios de Maurilândia e Turvelândia em um só lugar.{% endblock %}">
   <link rel="icon" href="{% static 'vitrine/favicon.svg' %}" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{% static 'vitrine/icone-180.png' %}">
   <link rel="stylesheet" href="{% static 'vitrine/site.css' %}">
@@ -14,7 +14,7 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
   <meta property="og:title" content="{% block og_titulo %}Achou Promo — promoções de Maurilândia e Turvelândia{% endblock %}">
-  <meta property="og:description" content="{% block og_descricao %}As promoções dos comércios da cidade num lugar só.{% endblock %}">
+  <meta property="og:description" content="{% block og_descricao %}As promoções dos comércios da cidade em um só lugar.{% endblock %}">
   {% block og_imagem %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'vitrine/icone-180.png' %}">{% endblock %}
   {% block extra_head %}{% endblock %}
   {% block estilo_extra %}{% endblock %}
@@ -50,7 +50,7 @@
     <div class="dentro">
       <div>
         <a class="logo" href="{% url 'inicio' %}">{% include "vitrine/icones/logo.svg" %}<span>Achou <b>Promo</b></span></a>
-        <p>As promoções de Maurilândia e Turvelândia num lugar só. Grátis para quem compra.</p>
+        <p>As promoções de Maurilândia e Turvelândia em um só lugar. Grátis para quem compra.</p>
       </div>
       <div>
         <h4>Para você</h4>

@@ -39,7 +39,7 @@ Fechar cerca de 10 comércios antes do lançamento público.
 - [x] Botão "Quero anunciar" no rodapé (WhatsApp de quem vende os anúncios)
 - [x] Menu de abas no celular; páginas Lojas, Categorias e Para lojistas
 - [x] Página de cada loja como mini-site (capa, horário, abas Promoções/Informações)
-- [x] Ilustrações próprias e animações leves
+- [x] Visual mais limpo: sem emojis, menos categorias na tela, troca de cidade/categoria sem recarregar
 
 ## Divulgação (fora do código)
 - Cada comércio parceiro divulga no próprio perfil e no balcão

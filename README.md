@@ -77,19 +77,21 @@ Tudo é feito no **Admin**.
 No celular, um **menu de abas embaixo da tela** (Promoções, Lojas,
 Categorias, Anunciar), como um aplicativo; no computador, o menu fica no topo.
 
-- **Página inicial** — chamada com ilustração animada, "Como funciona" em 3
-  passos, atalhos de **categoria**, "Em destaque", **"Acaba hoje"**, faixa de
-  **lojas parceiras**, as demais promoções e um chamado para lojistas.
-  **Busca** (acha "acougue" em "Açougue", busca no título, descrição, loja e
-  categoria) e filtro por **cidade**. Selos de **desconto** (ex.: -17%),
-  "Acaba hoje" e "Destaque".
+- **Página inicial** — chamada curta ("As promoções de Maurilândia e
+  Turvelândia em um só lugar"), filtro por **cidade** e pelas 6 **categorias**
+  com mais ofertas, "Em destaque", "Acaba hoje", **lojas parceiras**, as
+  demais promoções e um chamado discreto para lojistas. Trocar de cidade ou
+  categoria **não recarrega a página** (o conteúdo troca suavemente e o botão
+  "voltar" funciona). **Busca** (acha "acougue" em "Açougue", busca no título,
+  descrição, loja e categoria). Selos de **desconto** (ex.: -17%) e "Acaba hoje".
 - **Lojas** (`/lojas/`) — todas as lojas parceiras com capa, logo e quantas
   ofertas têm no ar, com filtro por cidade e categoria.
-- **Categorias** (`/categorias/`) — atalhos grandes para cada categoria.
-- **Para lojistas** (`/para-lojistas/`) — página de venda para os comércios:
-  vantagens, como funciona, exemplo do relatório de resultados e perguntas
-  frequentes. Os números reais do site (lojas, visitas, chamadas) aparecem
-  sozinhos quando passarem de 5 lojas e 300 visitas em 30 dias.
+- **Categorias** (`/categorias/`) — lista das categorias que têm loja ou
+  oferta (as vazias não aparecem).
+- **Para lojistas** (`/para-lojistas/`) — página curta para os comércios: 3
+  vantagens, como funciona em 3 passos e 3 dúvidas comuns. Os números reais do
+  site (lojas, visitas, chamadas) aparecem sozinhos quando passarem de 5 lojas
+  e 300 visitas em 30 dias.
 - **Página da promoção** (`/p/<número>/`) — foto grande, preço, economia,
   validade, botão **Quero essa promoção** (abre o WhatsApp da loja com a
   mensagem pronta), **Compartilhar**, **Como chegar** e outras promoções da
@@ -98,8 +100,9 @@ Categorias, Anunciar), como um aplicativo; no computador, o menu fica no topo.
   botões **Chamar no WhatsApp**, **Como chegar** (Google Maps),
   **Instagram** e **Compartilhar**, e duas abas: **Promoções** e
   **Informações** (sobre, horário, endereço e contato).
-- As ilustrações do site são desenhos próprios em SVG (sem direitos autorais
-  de terceiros). As animações são leves e desligam sozinhas para quem ativou
+- Visual limpo, sem emojis: ícones de traço fino desenhados no padrão do
+  site e uma ilustração própria (SVG) só na chamada do computador. As
+  animações são curtas e discretas e desligam sozinhas para quem ativou
   "reduzir movimento" no celular.
 - Os links ficam com título e foto quando compartilhados no WhatsApp.
 - Rodapé com **"Quero anunciar"** (abre o WhatsApp de quem vende os
@@ -191,7 +194,7 @@ do site (útil quando algo dá erro).
 ### Domínio e HTTPS
 
 O domínio do site é **achoupromos.com.br** (o `achoupromo.com.br`, sem "s",
-já tinha dono). Ele fica configurado em um lugar só: o `SITE_URL` do `.env`
+já tinha dono). Ele fica configurado em um só lugar: o `SITE_URL` do `.env`
 do servidor.
 
 1. Registre o domínio no [Registro.br](https://registro.br).

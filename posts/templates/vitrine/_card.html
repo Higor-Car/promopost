@@ -3,7 +3,6 @@
     <img src="{{ p.imagem.url }}" alt="{{ p.titulo }}" loading="lazy">
     {% if p.desconto %}<span class="selo desconto">-{{ p.desconto }}%</span>{% endif %}
     {% if p.acaba_hoje %}<span class="selo hoje">Acaba hoje</span>{% endif %}
-    {% if p.destaque %}<span class="selo destaque">★ Destaque</span>{% endif %}
   </div>
   <div class="corpo">
     <h3>{{ p.titulo }}</h3>
