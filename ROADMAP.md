@@ -37,6 +37,9 @@ Fechar cerca de 10 comércios antes do lançamento público.
 - [x] Busca, página própria de cada promoção, compartilhar e "Como chegar"
 - [x] Novo visual (logo, ícone do site, categorias com ícone, selo de desconto)
 - [x] Botão "Quero anunciar" no rodapé (WhatsApp de quem vende os anúncios)
+- [x] Menu de abas no celular; páginas Lojas, Categorias e Para lojistas
+- [x] Página de cada loja como mini-site (capa, horário, abas Promoções/Informações)
+- [x] Ilustrações próprias e animações leves
 
 ## Divulgação (fora do código)
 - Cada comércio parceiro divulga no próprio perfil e no balcão
