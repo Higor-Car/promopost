@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Início</a> ›
+  <a href="{% url 'admin:posts_promocao_changelist' %}">Promoções</a> › Imagem do dia
+</div>
+{% endblock %}
+{% block content %}
+{% if imagens %}
+  <p style="max-width:760px">
+    Imagens prontas para o feed do Instagram (1080×1350, retrato).
+    {% if imagens|length > 1 %}São {{ imagens|length }} imagens: poste juntas como <strong>carrossel</strong>, na ordem.{% endif %}
+    Sem escolher nada, entram até 6 promoções no ar (destaques primeiro, depois as que acabam antes).
+    Para escolher, marque as promoções na lista e use a ação <em>"Gerar imagem do Instagram com as selecionadas"</em>.
+  </p>
+  <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;margin-top:16px">
+    {% for img in imagens %}
+      <figure style="margin:0;width:min(380px,100%)">
+        <img src="{{ img.url_png }}" alt="Imagem {{ img.numero }}" style="width:100%;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,.18)">
+        <figcaption style="margin-top:12px">
+          <a class="button default" href="{{ img.url_download }}" style="padding:10px 16px;display:inline-block">Baixar imagem {{ img.numero }}</a>
+          <ol style="margin-top:10px">{% for p in img.promocoes %}<li>{{ p.titulo }} — {{ p.comercio.nome }}</li>{% endfor %}</ol>
+        </figcaption>
+      </figure>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>Nenhuma promoção no ar agora. Cadastre ou marque promoções e volte aqui.</p>
+{% endif %}
+{% endblock %}

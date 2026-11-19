@@ -8,62 +8,54 @@
   <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ primeira.imagem.url }}">
 {% elif loja.logo %}
   <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ loja.logo.url }}">
-{% endif %}{% endwith %}{% endblock %}
+{% else %}{{ block.super }}{% endif %}{% endwith %}{% endblock %}
 
 {% block conteudo %}
 <a class="voltar" href="{% url 'inicio' %}">&larr; Todas as promoções</a>
 
+{% with url_loja=request.scheme|add:"://"|add:request.get_host|add:loja.get_absolute_url %}
 <section class="perfil">
   <div class="cabeca">
     {% if loja.logo %}
-      <img class="logo" src="{{ loja.logo.url }}" alt="Logo de {{ loja.nome }}">
+      <img class="avatar" src="{{ loja.logo.url }}" alt="Logo de {{ loja.nome }}">
     {% else %}
-      <span class="logo" aria-hidden="true">{{ loja.nome|first|upper }}</span>
+      <span class="avatar" aria-hidden="true">{{ loja.nome|first|upper }}</span>
     {% endif %}
     <div>
       <h1>{{ loja.nome }}</h1>
-      <div class="info">{{ loja.categoria.nome }} · {{ loja.get_cidade_display }}</div>
+      <div class="sub">{% if loja.categoria.icone %}{{ loja.categoria.icone }} {% endif %}{{ loja.categoria.nome }} · {{ loja.get_cidade_display }}</div>
     </div>
   </div>
   {% if loja.descricao %}<p>{{ loja.descricao|linebreaksbr }}</p>{% endif %}
-  {% if loja.endereco %}<p class="info">📍 {{ loja.endereco }}</p>{% endif %}
-  {% if whatsapp or loja.instagram_usuario %}
-    <div class="acoes">
-      {% if whatsapp %}
-        <a class="botao whatsapp" href="{{ whatsapp }}" target="_blank" rel="noopener">Chamar no WhatsApp</a>
-      {% endif %}
-      {% if loja.instagram_usuario %}
-        <a class="botao secundario" href="https://instagram.com/{{ loja.instagram_usuario }}" target="_blank" rel="noopener">@{{ loja.instagram_usuario }}</a>
-      {% endif %}
+  {% if loja.endereco %}<span class="info-linha">{% include "vitrine/icones/mapa.svg" %} {{ loja.endereco }}</span>{% endif %}
+  <div class="acoes">
+    {% if loja.whatsapp_numero %}
+      <a class="botao whats largo" href="{% url 'ir_whatsapp_comercio' loja.slug %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/whatsapp.svg" %} Chamar no WhatsApp</a>
+    {% endif %}
+    <div class="linha">
+      {% if loja.link_mapa %}<a class="botao claro pequeno" href="{% url 'ir_mapa' loja.slug %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/mapa.svg" %} Como chegar</a>{% endif %}
+      {% if loja.instagram_usuario %}<a class="botao claro pequeno" href="{% url 'ir_instagram' loja.slug %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/instagram.svg" %} Instagram</a>{% endif %}
+      <a class="botao claro pequeno" href="https://wa.me/?text={{ 'Veja as promoções de '|add:loja.nome|add:' no Achou Promo: '|add:url_loja|urlencode }}" target="_blank" rel="noopener" data-compartilhar data-titulo="{{ loja.nome }} no Achou Promo" data-texto="Veja as promoções de {{ loja.nome }} no Achou Promo" data-url="{{ url_loja }}">{% include "vitrine/icones/compartilhar.svg" %} Compartilhar</a>
     </div>
-  {% endif %}
+  </div>
 </section>
+{% endwith %}
 
-<h2 class="titulo-secao">
-  {% if promocoes %}Promoções valendo agora{% else %}Promoções{% endif %}
-</h2>
+<div class="secao">
+  <h2>{% if promocoes %}Promoções valendo agora{% else %}Promoções{% endif %}</h2>
+  {% if promocoes %}<span>{{ promocoes|length }}</span>{% endif %}
+</div>
 
 {% if promocoes %}
-  <div class="promo-lista">
-    {% for p in promocoes %}
-      <article class="promo{% if p.destaque %} destaque{% endif %}" id="promo-{{ p.pk }}">
-        <img src="{{ p.imagem.url }}" alt="{{ p.titulo }}" loading="lazy">
-        <div class="corpo">
-          <h2>{{ p.titulo }}</h2>
-          {% include "vitrine/_preco.html" %}
-          {% if p.descricao %}<p class="descricao">{{ p.descricao }}</p>{% endif %}
-          <span class="validade">{% if p.acaba_hoje %}Acaba hoje às {{ p.fim|date:"H:i" }}{% else %}Válida até {{ p.fim|date:"d/m \à\s H:i" }}{% endif %}</span>
-          {% with link=p.link_whatsapp %}{% if link %}
-            <a class="botao whatsapp largo" href="{{ link }}" target="_blank" rel="noopener">Quero essa promoção</a>
-          {% endif %}{% endwith %}
-        </div>
-      </article>
-    {% endfor %}
+  <div class="grade">
+    {% for p in promocoes %}{% include "vitrine/_card.html" with sem_loja=True %}{% endfor %}
   </div>
 {% else %}
   <div class="vazio">
-    <p>{{ loja.nome }} não tem promoção no ar agora.</p>
-    <p><a href="{% url 'inicio' %}">Ver promoções de outros comércios</a></p>
+    <div class="emoji">🕒</div>
+    <h2>Sem promoção no ar agora</h2>
+    <p>{{ loja.nome }} não tem oferta valendo neste momento.</p>
+    <a class="botao claro pequeno" href="{% url 'inicio' %}">Ver promoções de outras lojas</a>
   </div>
 {% endif %}
 {% endblock %}

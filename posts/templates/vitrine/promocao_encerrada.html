@@ -1,0 +1,21 @@
+{% extends "vitrine/base.html" %}
+
+{% block titulo %}Promoção encerrada — {{ promo.comercio.nome }} | Achou Promo{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block conteudo %}
+<div class="vazio">
+  <div class="emoji">⌛</div>
+  <h2>Essa promoção não está mais valendo</h2>
+  <p>"{{ promo.titulo }}" de {{ promo.comercio.nome }} já terminou ou ainda não começou.</p>
+  <a class="botao claro pequeno" href="{{ promo.comercio.get_absolute_url }}">Ver a loja</a>
+  <a class="botao claro pequeno" href="{% url 'inicio' %}">Todas as promoções</a>
+</div>
+
+{% if outras %}
+  <div class="secao"><h2>Valendo agora em {{ promo.comercio.nome }}</h2></div>
+  <div class="grade">
+    {% for p in outras %}{% include "vitrine/_card.html" with sem_loja=True %}{% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

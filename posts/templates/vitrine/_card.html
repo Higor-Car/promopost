@@ -1,13 +1,16 @@
-<a class="card{% if p.destaque %} destaque{% endif %}" href="{{ p.comercio.get_absolute_url }}#promo-{{ p.pk }}">
-  <img src="{{ p.imagem.url }}" alt="{{ p.titulo }}" loading="lazy">
-  <div class="selos">
-    {% if p.destaque %}<span class="selo">Destaque</span>{% endif %}
+<a class="card" href="{{ p.get_absolute_url }}">
+  <div class="foto">
+    <img src="{{ p.imagem.url }}" alt="{{ p.titulo }}" loading="lazy">
+    {% if p.desconto %}<span class="selo desconto">-{{ p.desconto }}%</span>{% endif %}
     {% if p.acaba_hoje %}<span class="selo hoje">Acaba hoje</span>{% endif %}
+    {% if p.destaque %}<span class="selo destaque">★ Destaque</span>{% endif %}
   </div>
   <div class="corpo">
     <h3>{{ p.titulo }}</h3>
     {% include "vitrine/_preco.html" %}
-    <span class="loja">{{ p.comercio.nome }} · {{ p.comercio.get_cidade_display }}</span>
-    <span class="validade">Válida até {{ p.fim|date:"d/m" }}</span>
+    {% if not sem_loja %}
+      <div class="loja">{% with loja=p.comercio %}{% include "vitrine/_avatar.html" %}{% endwith %}<span>{{ p.comercio.nome }}</span></div>
+    {% endif %}
+    <span class="validade">Até {{ p.fim|date:"d/m" }} · {{ p.comercio.get_cidade_display }}</span>
   </div>
 </a>

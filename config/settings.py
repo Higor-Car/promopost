@@ -16,6 +16,7 @@ No servidor, tudo que muda vem de variáveis de ambiente (arquivo
 """
 
 import os
+import re
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -50,6 +51,14 @@ CSRF_TRUSTED_ORIGINS = _env_lista("DJANGO_CSRF_TRUSTED_ORIGINS")
 # Endereço público do site (usado nos QR codes dos comércios).
 SITE_URL = _env("SITE_URL", "https://achoupromos.com.br").rstrip("/")
 
+# Perfil do Achou Promo no Instagram (sem @), mostrado no rodapé.
+INSTAGRAM_SITE = _env("ACHOUPROMO_INSTAGRAM", "achoupromo").lstrip("@")
+
+# WhatsApp de quem vende os anúncios (com DDD). Se vazio, o botão "Anuncie" não aparece.
+CONTATO_WHATSAPP = re.sub(r"\D", "", _env("ACHOUPROMO_CONTATO_WHATSAPP"))
+if len(CONTATO_WHATSAPP) in (10, 11):
+    CONTATO_WHATSAPP = "55" + CONTATO_WHATSAPP
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -83,6 +92,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "posts.context_processors.site",
             ],
         },
     },

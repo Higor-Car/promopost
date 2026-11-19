@@ -22,7 +22,7 @@ echo ">> Pacotes do sistema"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
 apt-get install -y -q python3 python3-venv python3-dev build-essential git nginx sqlite3 \
-    certbot python3-certbot-nginx unattended-upgrades
+    certbot python3-certbot-nginx unattended-upgrades fonts-dejavu-core
 dpkg-reconfigure -f noninteractive unattended-upgrades
 
 echo ">> Usuário e pastas"

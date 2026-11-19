@@ -1,0 +1,56 @@
+{% extends "vitrine/base.html" %}
+
+{% block titulo %}{{ promo.titulo }}{% if promo.preco is not None %} por R$ {{ promo.preco|floatformat:"2g" }}{% endif %} — {{ loja.nome }} | Achou Promo{% endblock %}
+{% block descricao %}{{ promo.titulo }} em {{ loja.nome }} ({{ loja.get_cidade_display }}). Válida até {{ promo.fim|date:"d/m" }}.{% endblock %}
+{% block og_titulo %}{{ promo.titulo }}{% if promo.preco is not None %} — R$ {{ promo.preco|floatformat:"2g" }}{% endif %}{% endblock %}
+{% block og_descricao %}{{ loja.nome }} · {{ loja.get_cidade_display }} · válida até {{ promo.fim|date:"d/m" }}{% endblock %}
+{% block og_imagem %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ promo.imagem.url }}">{% endblock %}
+
+{% block conteudo %}
+<a class="voltar" href="{% url 'inicio' %}">&larr; Todas as promoções</a>
+
+{% with url_promo=request.scheme|add:"://"|add:request.get_host|add:promo.get_absolute_url %}
+<article class="promo-pagina">
+  <div class="foto">
+    <img src="{{ promo.imagem.url }}" alt="{{ promo.titulo }}">
+    {% if promo.desconto %}<span class="selo desconto">-{{ promo.desconto }}%</span>{% endif %}
+    {% if promo.destaque %}<span class="selo destaque">★ Destaque</span>{% endif %}
+  </div>
+
+  <div class="promo-info">
+    <h1>{{ promo.titulo }}</h1>
+    {% with p=promo %}{% include "vitrine/_preco.html" %}{% endwith %}
+    {% if promo.desconto %}<span><span class="economia">Economia de {{ promo.desconto }}%</span></span>{% endif %}
+    {% if promo.acaba_hoje %}
+      <span class="info-linha urgente">{% include "vitrine/icones/relogio.svg" %} Acaba hoje às {{ promo.fim|date:"H:i" }}</span>
+    {% else %}
+      <span class="info-linha">{% include "vitrine/icones/relogio.svg" %} Válida até {{ promo.fim|date:"d/m \à\s H:i" }}</span>
+    {% endif %}
+    {% if promo.descricao %}<p class="descricao">{{ promo.descricao }}</p>{% endif %}
+
+    <div class="acoes">
+      {% if loja.whatsapp_numero %}
+        <a class="botao whats largo" href="{% url 'ir_whatsapp_promocao' promo.pk %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/whatsapp.svg" %} Quero essa promoção</a>
+      {% endif %}
+      <div class="linha">
+        <a class="botao claro pequeno" href="https://wa.me/?text={{ promo.titulo|add:' em '|add:loja.nome|add:' — vi no Achou Promo: '|add:url_promo|urlencode }}" target="_blank" rel="noopener" data-compartilhar data-titulo="{{ promo.titulo }}" data-texto="{{ promo.titulo }} em {{ loja.nome }} — vi no Achou Promo" data-url="{{ url_promo }}">{% include "vitrine/icones/compartilhar.svg" %} Compartilhar</a>
+        {% if loja.link_mapa %}<a class="botao claro pequeno" href="{% url 'ir_mapa' loja.slug %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/mapa.svg" %} Como chegar</a>{% endif %}
+      </div>
+    </div>
+
+    <a class="loja-cartao" href="{{ loja.get_absolute_url }}">
+      {% include "vitrine/_avatar.html" %}
+      <div><strong>{{ loja.nome }}</strong><small>{% if loja.categoria.icone %}{{ loja.categoria.icone }} {% endif %}{{ loja.categoria.nome }} · {{ loja.get_cidade_display }}</small></div>
+      {% include "vitrine/icones/seta.svg" %}
+    </a>
+  </div>
+</article>
+{% endwith %}
+
+{% if outras %}
+  <div class="secao"><h2>Mais promoções de {{ loja.nome }}</h2></div>
+  <div class="grade">
+    {% for p in outras %}{% include "vitrine/_card.html" with sem_loja=True %}{% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

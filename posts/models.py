@@ -1,4 +1,6 @@
 import re
+import secrets
+import unicodedata
 from urllib.parse import quote
 
 from django.core.exceptions import ValidationError
@@ -13,9 +15,20 @@ class Cidade(models.TextChoices):
     TURVELANDIA = "turvelandia", "Turvelândia"
 
 
+def normalizar(texto):
+    """Minúsculas e sem acento, para a busca achar "acougue" em "Açougue"."""
+    texto = unicodedata.normalize("NFKD", texto or "")
+    return "".join(c for c in texto if not unicodedata.combining(c)).lower()
+
+
+def novo_token():
+    return secrets.token_urlsafe(16)
+
+
 class Categoria(models.Model):
     nome = models.CharField(max_length=60, unique=True)
     slug = models.SlugField(max_length=60, unique=True, help_text="Usado no endereço do filtro.")
+    icone = models.CharField("ícone", max_length=8, blank=True, help_text="Um emoji. Ex.: 🛒")
     ordem = models.PositiveSmallIntegerField(default=0, help_text="Menor aparece primeiro.")
 
     class Meta:
@@ -49,6 +62,9 @@ class Comercio(models.Model):
     plano = models.CharField(max_length=10, choices=Plano.choices, default=Plano.BASICO)
     mensalidade = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     ativo = models.BooleanField(default=True, help_text="Desmarque para tirar o comércio da vitrine.")
+    token_resultado = models.CharField(
+        "código do link de resultado", max_length=32, unique=True, default=novo_token, editable=False,
+    )
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -87,7 +103,17 @@ class Comercio(models.Model):
 
     @property
     def instagram_usuario(self):
-        return self.instagram.strip().lstrip("@").split("/")[-1] if self.instagram.strip() else ""
+        return self.instagram.strip().rstrip("/").lstrip("@").split("/")[-1] if self.instagram.strip() else ""
+
+    @property
+    def link_mapa(self):
+        if not self.endereco:
+            return ""
+        busca = f"{self.endereco}, {self.get_cidade_display()} - GO"
+        return "https://www.google.com/maps/search/?api=1&query=" + quote(busca)
+
+    def get_resultado_url(self):
+        return reverse("resultado", args=[self.token_resultado])
 
 
 class PromocaoQuerySet(models.QuerySet):
@@ -127,6 +153,9 @@ class Promocao(models.Model):
     def __str__(self):
         return f"{self.titulo} - {self.comercio.nome}"
 
+    def get_absolute_url(self):
+        return reverse("promocao", args=[self.pk])
+
     def clean(self):
         erros = {}
         if self.inicio and self.fim and self.fim <= self.inicio:
@@ -145,7 +174,49 @@ class Promocao(models.Model):
     def acaba_hoje(self):
         return timezone.localdate(self.fim) == timezone.localdate()
 
+    @property
+    def desconto(self):
+        """Porcentagem de desconto (ex.: 17) quando há preço e preço antes."""
+        if self.preco is None or not self.preco_de or self.preco_de <= self.preco:
+            return None
+        return round((1 - self.preco / self.preco_de) * 100)
+
+    def texto_busca(self):
+        partes = [self.titulo, self.descricao, self.comercio.nome, self.comercio.categoria.nome]
+        return normalizar(" ".join(partes))
+
     def link_whatsapp(self):
         return self.comercio.link_whatsapp(
             f"Olá! Vi a promoção \"{self.titulo}\" no Achou Promo e quero saber mais."
         )
+
+
+class MetricaDiaria(models.Model):
+    """Contadores por dia, comércio, promoção e tipo de acesso. Não guarda IP nem dados pessoais."""
+
+    class Tipo(models.TextChoices):
+        IMPRESSAO = "impressao", "Apareceu na vitrine"
+        VISITA_PROMOCAO = "visita_promocao", "Abriu a promoção"
+        VISITA_COMERCIO = "visita_comercio", "Visitou a página da loja"
+        WHATSAPP = "whatsapp", "Clicou no WhatsApp"
+        INSTAGRAM = "instagram", "Clicou no Instagram"
+        MAPA = "mapa", "Clicou em Como chegar"
+        QR = "qr", "Chegou pelo QR code"
+
+    dia = models.DateField()
+    chave = models.CharField(max_length=60, editable=False)
+    comercio = models.ForeignKey(Comercio, on_delete=models.CASCADE, related_name="metricas")
+    promocao = models.ForeignKey(
+        Promocao, on_delete=models.SET_NULL, null=True, blank=True, related_name="metricas"
+    )
+    tipo = models.CharField(max_length=20, choices=Tipo.choices)
+    total = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "métrica diária"
+        verbose_name_plural = "métricas diárias"
+        constraints = [models.UniqueConstraint(fields=["dia", "chave"], name="metrica_unica_por_dia")]
+        indexes = [models.Index(fields=["comercio", "dia"])]
+
+    def __str__(self):
+        return f"{self.dia} {self.comercio_id} {self.tipo}: {self.total}"
