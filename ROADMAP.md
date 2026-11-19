@@ -8,19 +8,19 @@ Os dados são cadastrados pelo administrador (via admin do Django).
 Fechar cerca de 10 comércios antes do lançamento público.
 
 ## Fase 1 — Vitrine pública
-- [ ] Página inicial com as promoções ativas
-- [ ] Filtro por cidade e categoria
-- [ ] Página de cada comércio, com botão de WhatsApp
-- [ ] Layout pensado para celular primeiro
+- [x] Página inicial com as promoções ativas
+- [x] Filtro por cidade e categoria
+- [x] Página de cada comércio, com botão de WhatsApp
+- [x] Layout pensado para celular primeiro
 
 ## Fase 2 — Ajustes nos models
-- [ ] Validade da promoção (some da vitrine quando vence)
-- [ ] Categoria e cidade
-- [ ] Destaque de promoção
-- [ ] Editar e excluir promoção pelo admin
+- [x] Validade da promoção (some da vitrine quando vence)
+- [x] Categoria e cidade
+- [x] Destaque de promoção
+- [x] Editar e excluir promoção pelo admin
 
 ## Fase 3 — No ar
-- [ ] README
+- [x] README
 - [ ] Domínio (achoupromo.com.br)
 - [ ] Deploy
 - [ ] QR codes para colar nos comércios parceiros
