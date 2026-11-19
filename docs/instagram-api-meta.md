@@ -30,7 +30,8 @@ e com rotina diária, se a postagem manual virar um peso.
 
 - A imagem já é gerada pelo sistema (`posts/instagram.py`). A API não recebe
   o arquivo direto: ela baixa a imagem de um **endereço público em HTTPS**,
-  então o site precisa estar com o domínio e o HTTPS ligados.
+  então o site precisa estar com o domínio e o HTTPS ligados (já estão desde
+  19/11/2026).
 - Fluxo da API: criar um "contêiner" de mídia com a URL da imagem e a legenda
   → (para carrossel, um contêiner por imagem + um contêiner de carrossel) →
   publicar o contêiner.

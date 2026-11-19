@@ -22,7 +22,7 @@ Fechar cerca de 10 comércios antes do lançamento público.
 ## Fase 3 — No ar
 - [x] README
 - [x] Domínio (achoupromos.com.br — o achoupromo.com.br já tinha dono)
-- [ ] HTTPS (rodar deploy/https.sh no servidor)
+- [x] HTTPS (Let's Encrypt, renova sozinho)
 - [x] Deploy (AWS Lightsail)
 - [x] QR codes para colar nos comércios parceiros
 

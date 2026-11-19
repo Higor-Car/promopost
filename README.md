@@ -147,9 +147,9 @@ de várias lojas de uma vez: selecione na lista e use a ação **"Gerar QR
 codes das lojas selecionadas"** (ou o link **baixar** na coluna QR code). Os
 acessos pelo QR code aparecem no resultado da loja.
 
-O link do dono e o QR code usam o domínio do `SITE_URL` com **http** enquanto
-o HTTPS não estiver ligado, e passam a usar **https** sozinhos depois do
-`https.sh`.
+O link do dono e o QR code usam o endereço do site (`SITE_URL`) com
+**https**, já que o HTTPS está ligado. Se um dia o HTTPS for desligado, eles
+voltam a usar http sozinhos, para não apontar para um endereço que não abre.
 
 ## Tema claro e escuro
 
@@ -158,6 +158,8 @@ animação de círculo que se abre a partir do botão). A escolha fica salva no
 aparelho; quem nunca escolheu vê o tema do próprio celular.
 
 ## Site no ar (AWS Lightsail)
+
+Endereço: **https://achoupromos.com.br** (com cadeado).
 
 O site roda num servidor **AWS Lightsail** (Ubuntu 24.04, região São Paulo)
 com nginx + gunicorn. O banco (SQLite) e as fotos ficam no disco do servidor,
@@ -201,29 +203,34 @@ do site (útil quando algo dá erro).
 
 - **Banco:** cópia automática todo dia às 03:30 em `/srv/achoupromo/backups/`
   (guarda 14 dias).
-- **Servidor inteiro (banco + fotos):** ative os *snapshots automáticos* da
-  instância no console do Lightsail (aba **Snapshots**).
+- **Servidor inteiro (banco + fotos):** *snapshots automáticos* do Lightsail
+  já estão ativados, todo dia às 04:00 (horário de Brasília); ficam na aba
+  **Snapshots** da instância.
 
 ### Domínio e HTTPS
 
-O domínio do site é **achoupromos.com.br** (o `achoupromo.com.br`, sem "s",
-já tinha dono). Ele fica configurado em um só lugar: o `SITE_URL` do `.env`
-do servidor.
+**Situação: tudo pronto.** O domínio **achoupromos.com.br** (o
+`achoupromo.com.br`, sem "s", já tinha dono) está registrado no Registro.br,
+o DNS aponta para o servidor e o **HTTPS está ligado**: certificado Let's
+Encrypt, renovado sozinho; quem digita `http://` é levado para `https://`.
+O domínio fica configurado em um só lugar: o `SITE_URL` do `.env` do servidor.
 
-1. Registre o domínio no [Registro.br](https://registro.br).
-2. No Registro.br, em **DNS → Editar zona**, crie dois registros do tipo
-   **A**: um com o nome em branco (o próprio domínio) e outro com o nome
-   `www`, os dois apontando para o **IP fixo** do servidor (aparece no
-   console do Lightsail).
-3. Quando o endereço já abrir o site (pode levar algumas horas), instale o
-   certificado HTTPS, grátis e renovado sozinho:
+Não há nada a fazer no dia a dia. Os passos abaixo ficam como referência, caso
+seja preciso refazer (servidor novo ou outro domínio):
+
+1. Registrar o domínio no [Registro.br](https://registro.br).
+2. No Registro.br, em **DNS → Configurar zona DNS** (modo avançado), criar
+   dois registros do tipo **A**: um com o nome em branco (o próprio domínio)
+   e outro com o nome `www`, os dois apontando para o **IP fixo** do
+   servidor (aparece no console do Lightsail).
+3. Quando o endereço já abrir o site, instalar o certificado HTTPS:
 
 ```bash
 sudo bash /srv/achoupromo/app/deploy/https.sh seu-email@exemplo.com
 ```
 
-Para trocar de domínio no futuro (ex.: se conseguir um nome melhor), rode o
-comando abaixo, aponte o DNS do domínio novo e rode o `https.sh` de novo:
+Para trocar de domínio (ex.: se conseguir um nome melhor), rode o comando
+abaixo, aponte o DNS do domínio novo e rode o `https.sh` de novo:
 
 ```bash
 sudo bash /srv/achoupromo/app/deploy/trocar-dominio.sh novodominio.com.br
