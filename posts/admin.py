@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from django.db.models import Count, Q
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import path, reverse
 from django.utils import timezone
@@ -8,7 +8,7 @@ from django.utils.html import format_html
 
 from .instagram import MAXIMO, gerar_imagem, paginas
 from .models import Categoria, Comercio, Promocao, novo_token
-from .qr import qr_svg, url_publica
+from .qr import qr_png, qr_svg, url_publica, url_qr_loja
 
 admin.site.site_header = "Achou Promo — administração"
 admin.site.site_title = "Achou Promo"
@@ -27,19 +27,31 @@ class CategoriaAdmin(admin.ModelAdmin):
 @admin.register(Comercio)
 class ComercioAdmin(admin.ModelAdmin):
     list_display = (
-        "nome", "categoria", "cidade", "whatsapp", "mensalidade", "promocoes_no_ar", "resultado", "ativo",
+        "nome", "categoria", "cidade", "whatsapp", "mensalidade", "promocoes_no_ar", "resultado", "qrcode", "ativo",
     )
-    list_filter = ("cidade", "categoria", "ativo", "plano")
+    list_filter = ("cidade", "categoria", "ativo", "mostrar_whatsapp", "plano")
     search_fields = ("nome", "instagram", "whatsapp")
     prepopulated_fields = {"slug": ("nome",)}
-    readonly_fields = ("link_resultado",)
-    actions = ("imprimir_qrcodes", "gerar_novo_link_resultado")
+    readonly_fields = ("link_resultado", "qrcode_da_loja")
+    actions = ("gerar_qrcodes", "gerar_novo_link_resultado")
     fieldsets = (
         (None, {"fields": ("nome", "slug", "categoria", "cidade", "ativo")}),
-        ("Na vitrine", {"fields": ("logo", "capa", "descricao", "horario", "endereco", "whatsapp", "instagram")}),
+        ("Na vitrine", {"fields": (
+            "logo", "capa", "descricao", "horario", "endereco", "whatsapp", "mostrar_whatsapp", "instagram",
+        )}),
         ("Contrato", {"fields": ("plano", "mensalidade")}),
-        ("Resultado para o dono da loja", {"fields": ("link_resultado",)}),
+        ("Para o dono da loja", {"fields": ("link_resultado", "qrcode_da_loja")}),
     )
+
+    def get_urls(self):
+        extras = [
+            path(
+                "<int:pk>/qrcode.png",
+                self.admin_site.admin_view(self.baixar_qrcode),
+                name="posts_comercio_qrcode",
+            ),
+        ]
+        return extras + super().get_urls()
 
     def get_queryset(self, request):
         agora = timezone.now()
@@ -58,7 +70,11 @@ class ComercioAdmin(admin.ModelAdmin):
 
     @admin.display(description="resultado")
     def resultado(self, obj):
-        return format_html('<a href="{}" target="_blank">ver</a>', obj.get_resultado_url())
+        return format_html('<a href="{}" target="_blank">abrir</a>', url_publica(obj.get_resultado_url()))
+
+    @admin.display(description="QR code")
+    def qrcode(self, obj):
+        return format_html('<a href="{}">baixar</a>', reverse("admin:posts_comercio_qrcode", args=[obj.pk]))
 
     @admin.display(description="link de resultado")
     def link_resultado(self, obj):
@@ -68,27 +84,44 @@ class ComercioAdmin(admin.ModelAdmin):
         return format_html(
             '<a href="{0}" target="_blank">{0}</a><br>'
             '<span style="color:#666">Mande este link para o dono da loja: ele mostra visitas, '
-            'cliques no WhatsApp e acessos pelo QR code, sem precisar de senha. Se o link vazar, '
+            'cliques e acessos pelo QR code, sem precisar de senha. Se o link vazar, '
             'use a ação "Gerar novo link de resultado" na lista de comércios.</span>',
             url,
         )
 
-    @admin.action(description="Imprimir QR codes (para colar na loja)")
-    def imprimir_qrcodes(self, request, queryset):
-        cartoes = []
-        for loja in queryset.order_by("nome"):
-            endereco = url_publica(loja.get_absolute_url())
-            cartoes.append({
-                "chamada": "Veja as promoções desta loja",
-                "loja": loja.nome,
-                "endereco": endereco,
-                "svg": qr_svg(endereco + "?origem=qr"),
-            })
-        return render(
-            request,
-            "admin/posts/qrcodes.html",
-            {"cartoes": cartoes, "voltar": reverse("admin:posts_comercio_changelist")},
+    @admin.display(description="QR code da loja")
+    def qrcode_da_loja(self, obj):
+        if not obj.pk:
+            return "Aparece depois de salvar."
+        destino = url_qr_loja(obj)
+        return format_html(
+            '<div style="width:180px;background:#fff;padding:4px;border-radius:8px">{}</div>'
+            '<p style="margin:8px 0 4px"><a class="button" href="{}">Baixar QR code (PNG)</a></p>'
+            '<span style="color:#666">Leva para: {}</span>',
+            qr_svg(destino), reverse("admin:posts_comercio_qrcode", args=[obj.pk]), destino,
         )
+
+    def baixar_qrcode(self, request, pk):
+        loja = self.get_object(request, str(pk))
+        if loja is None:
+            raise Http404
+        resposta = HttpResponse(qr_png(url_qr_loja(loja)), content_type="image/png")
+        resposta["Content-Disposition"] = f'attachment; filename="qrcode-{loja.slug}.png"'
+        return resposta
+
+    @admin.action(description="Gerar QR codes das lojas selecionadas")
+    def gerar_qrcodes(self, request, queryset):
+        lojas = [
+            {"loja": loja, "svg": qr_svg(url_qr_loja(loja)), "destino": url_qr_loja(loja),
+             "png": reverse("admin:posts_comercio_qrcode", args=[loja.pk])}
+            for loja in queryset.order_by("nome")
+        ]
+        return render(request, "admin/posts/qrcodes.html", {
+            **self.admin_site.each_context(request),
+            "title": "QR codes das lojas",
+            "lojas": lojas,
+            "opts": self.model._meta,
+        })
 
     @admin.action(description="Gerar novo link de resultado (o antigo para de funcionar)")
     def gerar_novo_link_resultado(self, request, queryset):

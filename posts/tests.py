@@ -393,7 +393,7 @@ class EstruturaTests(Base):
     def test_pagina_para_lojistas(self):
         resp = self.client.get(reverse("para_lojistas"))
         self.assertContains(resp, "O que sua loja ganha")
-        self.assertContains(resp, "Clientes no seu WhatsApp")
+        self.assertContains(resp, "WhatsApp, se você quiser")
         self.assertContains(resp, "Dúvidas")
         self.assertContains(resp, "Como funciona")
         self.assertFalse(resp.context["mostrar_numeros"])  # poucos números ainda
@@ -614,22 +614,116 @@ class ImagemInstagramTests(Base):
 
 @override_settings(SITE_URL="https://achoupromos.com.br")
 class QrCodeTests(Base):
-    def test_acao_imprime_um_cartao_por_comercio(self):
+    def setUp(self):
+        super().setUp()
         admin = get_user_model().objects.create_superuser("admin", password="senha-teste-123")
         self.client.force_login(admin)
-        lojas = [self.comercio("Mercado Um"), self.comercio("Padaria Dois")]
+        self.lojas = [self.comercio("Mercado Um"), self.comercio("Padaria Dois")]
+
+    def test_sem_https_os_links_usam_http(self):
+        # Enquanto o certificado não está instalado, https:// não abre: o link do dono e o QR usam http.
+        from .qr import url_publica, url_qr_loja
+
+        self.assertEqual(url_publica("/x/"), "http://achoupromos.com.br/x/")
+        self.assertEqual(url_qr_loja(self.lojas[0]), "http://achoupromos.com.br/c/mercado-um/?origem=qr")
+
+    @override_settings(SECURE_SSL_REDIRECT=True)
+    def test_com_https_os_links_usam_https(self):
+        from .qr import url_publica
+
+        self.assertEqual(url_publica("/x/"), "https://achoupromos.com.br/x/")
+
+    def test_acao_gera_qr_codes_sem_pagina_de_impressao(self):
         resp = self.client.post(
             reverse("admin:posts_comercio_changelist"),
-            {"action": "imprimir_qrcodes", "_selected_action": [loja.pk for loja in lojas]},
+            {"action": "gerar_qrcodes", "_selected_action": [loja.pk for loja in self.lojas]},
         )
         self.assertEqual(resp.status_code, 200)
         html = resp.content.decode()
-        self.assertEqual(html.count("<svg"), 2)
-        self.assertIn("https://achoupromos.com.br/c/mercado-um/", html)
-        self.assertIn("Padaria Dois", html)
+        self.assertEqual(html.count('<svg class="qr"'), 2)
+        self.assertIn("http://achoupromos.com.br/c/mercado-um/?origem=qr", html)
+        self.assertIn("Baixar PNG", html)
+        self.assertNotIn("window.print", html)
 
-    def test_qr_aponta_para_o_endereco(self):
-        from .qr import qr_svg
+    def test_baixar_png(self):
+        loja = self.lojas[0]
+        resp = self.client.get(reverse("admin:posts_comercio_qrcode", args=[loja.pk]))
+        self.assertEqual(resp["Content-Type"], "image/png")
+        self.assertIn('filename="qrcode-mercado-um.png"', resp["Content-Disposition"])
+        im = Image.open(io.BytesIO(resp.content))
+        self.assertGreaterEqual(im.size[0], 300)
+        self.assertEqual(self.client.get(reverse("admin:posts_comercio_qrcode", args=[9999])).status_code, 404)
 
-        svg = qr_svg("https://achoupromos.com.br/c/mercado-um/?origem=qr")
-        self.assertTrue(svg.startswith("<svg") or svg.startswith("<?xml"))
+    def test_qr_e_link_na_ficha_da_loja(self):
+        loja = self.lojas[0]
+        resp = self.client.get(reverse("admin:posts_comercio_change", args=[loja.pk]))
+        self.assertContains(resp, "Baixar QR code (PNG)")
+        self.assertContains(resp, f"http://achoupromos.com.br{loja.get_resultado_url()}")
+
+    def test_qr_so_para_admin(self):
+        self.client.logout()
+        resp = self.client.get(reverse("admin:posts_comercio_qrcode", args=[self.lojas[0].pk]))
+        self.assertEqual(resp.status_code, 302)
+
+    def test_link_do_dono_abre(self):
+        self.client.logout()
+        resp = self.client.get(self.lojas[0].get_resultado_url(), HTTP_USER_AGENT="Mozilla/5.0")
+        self.assertEqual(resp.status_code, 200)
+
+
+class WhatsappOpcionalTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.loja = self.comercio("Mercado Calado", whatsapp="64999991234", mostrar_whatsapp=False, endereco="Rua 2")
+        self.promo = self.promocao(self.loja, "Arroz quietinho")
+
+    def test_sem_botao_nem_numero(self):
+        for url in (self.loja.get_absolute_url(), self.loja.get_absolute_url() + "?aba=info", self.promo.get_absolute_url()):
+            resp = self.client.get(url)
+            self.assertNotContains(resp, "/ir/whatsapp/", msg_prefix=url)
+            self.assertNotContains(resp, "99999-1234", msg_prefix=url)
+            self.assertNotContains(resp, "Quero essa promoção", msg_prefix=url)
+
+    def test_saida_whatsapp_nao_existe(self):
+        self.assertEqual(self.client.get(reverse("ir_whatsapp_promocao", args=[self.promo.pk])).status_code, 404)
+        self.assertEqual(self.client.get(reverse("ir_whatsapp_comercio", args=[self.loja.slug])).status_code, 404)
+
+    def test_resultado_destaca_visitas(self):
+        resp = self.client.get(self.loja.get_resultado_url())
+        self.assertNotContains(resp, "Chamadas no WhatsApp")
+        self.assertContains(resp, "Visitas na sua página e promoções")
+
+    def test_ligado_por_padrao(self):
+        loja = self.comercio("Mercado Falante", whatsapp="64988887777")
+        self.assertTrue(loja.mostrar_whatsapp)
+        self.assertTrue(loja.whatsapp_visivel)
+
+
+class TemaETextosTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.promocao(self.comercio("Loja T", cidade=Cidade.TURVELANDIA), "Oferta T")
+
+    def test_botao_de_tema_e_script_sem_piscar(self):
+        resp = self.client.get(reverse("inicio"))
+        self.assertContains(resp, 'class="tema"')
+        self.assertContains(resp, 'localStorage.getItem("tema")')
+        self.assertContains(resp, 'data-tema')
+
+    def test_textos_sem_cidade_fixa(self):
+        for url in (reverse("inicio"), reverse("lojas"), reverse("categorias"), reverse("para_lojistas")):
+            html = self.client.get(url).content.decode()
+            # Cidades só aparecem no filtro (botões), não nos textos.
+            sem_filtro = html.replace(">Maurilândia<", "").replace(">Turvelândia<", "")
+            self.assertNotIn("Maurilândia e Turvelândia", sem_filtro, url)
+        resp = self.client.get(reverse("inicio"))
+        self.assertContains(resp, "da <span>sua cidade</span> em um só lugar", html=False)
+
+    def test_cidade_aparece_quando_escolhida(self):
+        resp = self.client.get(reverse("inicio"), {"cidade": "turvelandia"})
+        self.assertContains(resp, "de <span>Turvelândia</span> em um só lugar")
+
+    def test_instagram_oficial(self):
+        resp = self.client.get(reverse("inicio"))
+        self.assertContains(resp, "instagram.com/achoupromos3")
+        self.assertNotContains(resp, "instagram.com/achoupromo\"")

@@ -31,7 +31,7 @@
     <div class="sub">{{ loja.categoria.nome }} · {{ loja.get_cidade_display }}{% if promocoes %} · <strong style="color: var(--marca-escura)">{{ promocoes|length }} oferta{{ promocoes|length|pluralize }} agora</strong>{% endif %}</div>
   </div>
   <div class="acoes">
-    {% if loja.whatsapp_numero %}
+    {% if loja.whatsapp_visivel %}
       <a class="botao whats largo" href="{% url 'ir_whatsapp_comercio' loja.slug %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/whatsapp.svg" %} Chamar no WhatsApp</a>
     {% endif %}
     <div class="linha">
@@ -56,7 +56,7 @@
   {% else %}
     <div class="vazio">
       <h2>Sem promoção no ar agora</h2>
-      <p>{{ loja.nome }} não tem oferta valendo neste momento.{% if loja.whatsapp_numero %} Chame no WhatsApp para saber das novidades.{% endif %}</p>
+      <p>{{ loja.nome }} não tem oferta valendo neste momento.{% if loja.whatsapp_visivel %} Chame no WhatsApp para saber das novidades.{% endif %}</p>
       <a class="botao claro pequeno" href="{% url 'inicio' %}">Ver promoções de outras lojas</a>
     </div>
   {% endif %}
@@ -77,15 +77,15 @@
         <a class="botao claro pequeno" href="{% url 'ir_mapa' loja.slug %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/mapa.svg" %} Abrir no mapa</a>
       </div>
     {% endif %}
-    {% if loja.whatsapp_numero or loja.instagram_usuario %}
+    {% if loja.whatsapp_visivel or loja.instagram_usuario %}
       <div class="info-cartao">
-        <h3>{% include "vitrine/icones/whatsapp.svg" %} Contato</h3>
-        {% if loja.whatsapp_numero %}<p>WhatsApp: {{ loja.whatsapp_formatado }}</p>{% endif %}
+        <h3>Contato</h3>
+        {% if loja.whatsapp_visivel %}<p>WhatsApp: {{ loja.whatsapp_formatado }}</p>{% endif %}
         {% if loja.instagram_usuario %}<p>Instagram: @{{ loja.instagram_usuario }}</p>{% endif %}
-        {% if loja.whatsapp_numero %}<a class="botao whats pequeno" href="{% url 'ir_whatsapp_comercio' loja.slug %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/whatsapp.svg" %} Chamar no WhatsApp</a>{% endif %}
+        {% if loja.whatsapp_visivel %}<a class="botao whats pequeno" href="{% url 'ir_whatsapp_comercio' loja.slug %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/whatsapp.svg" %} Chamar no WhatsApp</a>{% endif %}
       </div>
     {% endif %}
-    {% if not loja.descricao and not loja.horario and not loja.endereco and not loja.whatsapp_numero and not loja.instagram_usuario %}
+    {% if not loja.descricao and not loja.horario and not loja.endereco and not loja.whatsapp_visivel and not loja.instagram_usuario %}
       <div class="info-cartao"><p>Esta loja ainda não cadastrou informações.</p></div>
     {% endif %}
   </div>

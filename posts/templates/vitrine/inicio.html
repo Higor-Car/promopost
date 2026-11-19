@@ -10,8 +10,8 @@
 {% if not filtrando %}
 <section class="hero">
   <div class="hero-texto">
-    <h1>As promoções de <span>{% if cidade %}{{ cidade_nome }}{% else %}Maurilândia e Turvelândia{% endif %}</span> em um só lugar</h1>
-    <p>Veja as ofertas dos comércios da cidade e chame a loja direto no WhatsApp.</p>
+    <h1>As promoções {% if cidade %}de <span>{{ cidade_nome }}</span>{% else %}da <span>sua cidade</span>{% endif %} em um só lugar</h1>
+    <p>Ofertas dos mercados, lojas e serviços perto de você, atualizadas todo dia.</p>
     {% if total %}<p class="contador">{{ total }} oferta{{ total|pluralize }} valendo agora</p>{% endif %}
   </div>
   <div class="hero-ilustra">{% include "vitrine/ilustracoes/sacola.svg" %}</div>

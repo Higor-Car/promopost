@@ -3,17 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff">
-  <script>document.documentElement.classList.add("js")</script>
-  <title>{% block titulo %}Achou Promo — promoções de Maurilândia e Turvelândia{% endblock %}</title>
-  <meta name="description" content="{% block descricao %}As promoções dos comércios de Maurilândia e Turvelândia em um só lugar.{% endblock %}">
+  <meta name="theme-color" content="#fff7ef">
+  <script>
+    // Aplica o tema antes de desenhar a página (evita piscar branco no modo escuro).
+    (function () {
+      var raiz = document.documentElement, tema;
+      raiz.classList.add("js");
+      try { tema = localStorage.getItem("tema"); } catch (e) {}
+      if (tema !== "claro" && tema !== "escuro") {
+        tema = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";
+      }
+      raiz.setAttribute("data-tema", tema);
+      if (tema === "escuro") document.querySelector('meta[name="theme-color"]').setAttribute("content", "#13110f");
+    })();
+  </script>
+  <title>{% block titulo %}Achou Promo — as promoções da sua cidade em um só lugar{% endblock %}</title>
+  <meta name="description" content="{% block descricao %}As promoções dos comércios da sua cidade em um só lugar.{% endblock %}">
   <link rel="icon" href="{% static 'vitrine/favicon.svg' %}" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{% static 'vitrine/icone-180.png' %}">
   <link rel="stylesheet" href="{% static 'vitrine/site.css' %}">
   <meta property="og:site_name" content="Achou Promo">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
-  <meta property="og:title" content="{% block og_titulo %}Achou Promo — promoções de Maurilândia e Turvelândia{% endblock %}">
+  <meta property="og:title" content="{% block og_titulo %}Achou Promo — as promoções da sua cidade{% endblock %}">
   <meta property="og:description" content="{% block og_descricao %}As promoções dos comércios da cidade em um só lugar.{% endblock %}">
   {% block og_imagem %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'vitrine/icone-180.png' %}">{% endblock %}
   {% block extra_head %}{% endblock %}
@@ -32,6 +44,13 @@
         <a href="{% url 'categorias' %}"{% if menu == "categorias" %} class="ativo" aria-current="page"{% endif %}>Categorias</a>
         <a href="{% url 'para_lojistas' %}" class="cta{% if menu == 'lojistas' %} ativo{% endif %}">Para lojistas</a>
       </nav>
+      <button type="button" class="tema" aria-label="Mudar entre tema claro e escuro" title="Tema claro / escuro">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <mask id="mascara-lua"><rect x="-6" y="-6" width="36" height="36" fill="#fff"/><circle class="sombra" cx="24" cy="10" r="6" fill="#000"/></mask>
+          <circle class="centro" cx="12" cy="12" r="5" fill="currentColor" mask="url(#mascara-lua)"/>
+          <g class="raios" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1.5v2M12 20.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></g>
+        </svg>
+      </button>
       {% block busca %}
       <form class="busca" action="{% url 'inicio' %}" method="get" role="search">
         {% include "vitrine/icones/lupa.svg" %}
@@ -50,7 +69,7 @@
     <div class="dentro">
       <div>
         <a class="logo" href="{% url 'inicio' %}">{% include "vitrine/icones/logo.svg" %}<span>Achou <b>Promo</b></span></a>
-        <p>As promoções de Maurilândia e Turvelândia em um só lugar. Grátis para quem compra.</p>
+        <p>As promoções da sua cidade em um só lugar. Grátis para quem compra.</p>
       </div>
       <div>
         <h4>Para você</h4>
@@ -68,7 +87,7 @@
           {% if LINK_ANUNCIE %}<a href="{{ LINK_ANUNCIE }}" target="_blank" rel="noopener">Quero anunciar</a>{% endif %}
         </nav>
       </div>
-      <div class="final">© {% now "Y" %} Achou Promo · Maurilândia e Turvelândia (GO)</div>
+      <div class="final">© {% now "Y" %} Achou Promo</div>
     </div>
   </footer>
 

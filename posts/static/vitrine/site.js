@@ -124,5 +124,35 @@
     });
   }
 
+  // Tema claro / escuro: o novo tema se abre num círculo a partir do botão.
+  var botaoTema = document.querySelector(".tema");
+  var raiz = document.documentElement;
+  function aplicarTema(tema) {
+    raiz.setAttribute("data-tema", tema);
+    try { localStorage.setItem("tema", tema); } catch (e) {}
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", tema === "escuro" ? "#13110f" : "#fff7ef");
+    if (botaoTema) botaoTema.setAttribute("aria-pressed", tema === "escuro" ? "true" : "false");
+  }
+  if (botaoTema) {
+    botaoTema.setAttribute("aria-pressed", raiz.getAttribute("data-tema") === "escuro" ? "true" : "false");
+    botaoTema.addEventListener("click", function () {
+      var novo = raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro";
+      if (!document.startViewTransition || reduzir) { aplicarTema(novo); return; }
+      var r = botaoTema.getBoundingClientRect();
+      var x = r.left + r.width / 2, y = r.top + r.height / 2;
+      var raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+      raiz.classList.add("trocando-tema");
+      var transicao = document.startViewTransition(function () { aplicarTema(novo); });
+      transicao.ready.then(function () {
+        raiz.animate(
+          { clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + raio + "px at " + x + "px " + y + "px)"] },
+          { duration: 550, easing: "cubic-bezier(.4, 0, .2, 1)", pseudoElement: "::view-transition-new(root)" }
+        );
+      });
+      transicao.finished.finally(function () { raiz.classList.remove("trocando-tema"); });
+    });
+  }
+
   iniciar(document);
 })();

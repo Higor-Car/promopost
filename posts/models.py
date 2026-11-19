@@ -66,6 +66,10 @@ class Comercio(models.Model):
     whatsapp = models.CharField(
         max_length=20, blank=True, help_text="Com DDD. Ex.: (64) 99999-1234"
     )
+    mostrar_whatsapp = models.BooleanField(
+        "mostrar botão de WhatsApp no site", default=True,
+        help_text="Desmarque se a loja quer aparecer só com as promoções, sem botão nem número de WhatsApp.",
+    )
     instagram = models.CharField("Instagram (@)", max_length=60, blank=True)
     plano = models.CharField(max_length=10, choices=Plano.choices, default=Plano.BASICO)
     mensalidade = models.DecimalField(max_digits=7, decimal_places=2, default=0)
@@ -101,8 +105,12 @@ class Comercio(models.Model):
             digitos = "55" + digitos
         return digitos
 
+    @property
+    def whatsapp_visivel(self):
+        return bool(self.mostrar_whatsapp and self.whatsapp_numero)
+
     def link_whatsapp(self, mensagem=""):
-        if not self.whatsapp_numero:
+        if not self.whatsapp_visivel:
             return ""
         link = f"https://wa.me/{self.whatsapp_numero}"
         if mensagem:

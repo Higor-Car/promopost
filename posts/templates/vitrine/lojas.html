@@ -1,13 +1,13 @@
 {% extends "vitrine/base.html" %}
 
 {% block titulo %}Lojas parceiras{% if cidade %} em {{ cidade_nome }}{% endif %} — Achou Promo{% endblock %}
-{% block descricao %}Os comércios de Maurilândia e Turvelândia que publicam promoções no Achou Promo.{% endblock %}
+{% block descricao %}Os comércios que publicam promoções no Achou Promo.{% endblock %}
 
 {% block conteudo %}
 <div class="secao" style="margin-top: 4px">
   <div>
     <h2 style="font-size: 24px">Lojas parceiras</h2>
-    <p>{{ lojas|length }} loja{{ lojas|length|pluralize }}{% if categoria %} de {{ categoria.nome|lower }}{% endif %}{% if cidade %} em {{ cidade_nome }}{% endif %}. Toque para ver as ofertas e falar com a loja.</p>
+    <p>{{ lojas|length }} loja{{ lojas|length|pluralize }}{% if categoria %} de {{ categoria.nome|lower }}{% endif %}{% if cidade %} em {{ cidade_nome }}{% endif %}. Toque para ver as ofertas da loja.</p>
   </div>
 </div>
 

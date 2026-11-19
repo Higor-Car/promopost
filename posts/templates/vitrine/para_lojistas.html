@@ -1,16 +1,16 @@
 {% extends "vitrine/base.html" %}
 
-{% block titulo %}Anuncie no Achou Promo — promoções de Maurilândia e Turvelândia{% endblock %}
-{% block descricao %}Coloque as promoções da sua loja no Achou Promo. Clientes chamam direto no WhatsApp e você acompanha os resultados.{% endblock %}
+{% block titulo %}Anuncie no Achou Promo{% endblock %}
+{% block descricao %}Coloque as promoções da sua loja no Achou Promo e acompanhe os resultados.{% endblock %}
 {% block og_titulo %}Anuncie sua loja no Achou Promo{% endblock %}
-{% block og_descricao %}Suas promoções para toda a cidade, com clientes chamando direto no WhatsApp.{% endblock %}
+{% block og_descricao %}Suas promoções para toda a cidade.{% endblock %}
 {% block busca %}{% endblock %}
 
 {% block conteudo %}
 <section class="lp-hero">
   <p class="etiqueta">Para lojistas</p>
   <h1>Suas promoções para toda a cidade</h1>
-  <p>Quem procura oferta em Maurilândia e Turvelândia encontra a sua e chama você direto no WhatsApp.</p>
+  <p>Quem procura oferta na cidade encontra a sua. Os clientes podem chamar sua loja no WhatsApp ou só conferir as ofertas, como você preferir.</p>
   {% if LINK_ANUNCIE %}
     <a class="botao whats" href="{{ LINK_ANUNCIE }}" target="_blank" rel="noopener">{% include "vitrine/icones/whatsapp.svg" %} Quero anunciar</a>
   {% elif INSTAGRAM_SITE %}
@@ -30,7 +30,7 @@
 <div class="vantagens">
   <div class="vantagem anima" style="--i: 0">
     <span class="icone">{% include "vitrine/icones/whatsapp.svg" %}</span>
-    <div><h3>Clientes no seu WhatsApp</h3><p>Cada oferta tem um botão que abre a conversa com a sua loja.</p></div>
+    <div><h3>WhatsApp, se você quiser</h3><p>Ative um botão que abre a conversa com a sua loja, ou mostre só as ofertas.</p></div>
   </div>
   <div class="vantagem anima" style="--i: 1">
     <span class="icone">{% include "vitrine/icones/loja.svg" %}</span>
@@ -46,7 +46,7 @@
 <ol class="etapas">
   <li class="anima" style="--i: 0">Você manda as ofertas pelo WhatsApp: foto, preço e validade.</li>
   <li class="anima" style="--i: 1">A gente publica, e a oferta sai sozinha quando vence.</li>
-  <li class="anima" style="--i: 2">Os clientes chamam você, e você acompanha os resultados.</li>
+  <li class="anima" style="--i: 2">Os clientes veem suas ofertas, e você acompanha os resultados.</li>
 </ol>
 
 <div class="secao"><h2>Dúvidas</h2></div>

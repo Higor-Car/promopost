@@ -28,7 +28,7 @@
     {% if promo.descricao %}<p class="descricao">{{ promo.descricao }}</p>{% endif %}
 
     <div class="acoes">
-      {% if loja.whatsapp_numero %}
+      {% if loja.whatsapp_visivel %}
         <a class="botao whats largo" href="{% url 'ir_whatsapp_promocao' promo.pk %}" target="_blank" rel="noopener nofollow">{% include "vitrine/icones/whatsapp.svg" %} Quero essa promoção</a>
       {% endif %}
       <div class="linha">

@@ -11,13 +11,13 @@
     .res-topo p { margin: 4px 0 0; color: var(--suave); font-size: 14px; }
     .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     @media (min-width: 860px) { .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-    .kpi { background: #fff; border-radius: 18px; padding: 16px; box-shadow: var(--sombra); display: grid; gap: 2px; }
+    .kpi { background: var(--cartao); border-radius: 18px; padding: 16px; box-shadow: var(--sombra); display: grid; gap: 2px; }
     .kpi .icone { font-size: 20px; }
     .kpi .n { font-size: 30px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
     .kpi .rotulo { font-size: 13.5px; color: var(--suave); font-weight: 600; }
     .kpi.destaque { background: var(--verde); color: #fff; }
     .kpi.destaque .rotulo { color: #dcfce7; }
-    .painel { background: #fff; border-radius: 18px; padding: 18px; box-shadow: var(--sombra); margin-top: 16px; }
+    .painel { background: var(--cartao); border-radius: 18px; padding: 18px; box-shadow: var(--sombra); margin-top: 16px; }
     .painel h2 { margin: 0 0 14px; font-size: 17px; font-weight: 800; }
     .grafico { display: flex; align-items: flex-end; gap: 3px; height: 150px; border-bottom: 1px solid var(--linha); }
     .grafico .col { flex: 1; height: 100%; display: flex; align-items: flex-end; }
@@ -65,8 +65,12 @@
 </div>
 
 <div class="kpis">
+  {% if loja.whatsapp_visivel %}
   <div class="kpi destaque"><span class="n">{{ whatsapp|floatformat:"g" }}</span><span class="rotulo">Chamadas no WhatsApp</span></div>
   <div class="kpi"><span class="n">{{ visitas|floatformat:"g" }}</span><span class="rotulo">Visitas na sua página e promoções</span></div>
+  {% else %}
+  <div class="kpi destaque"><span class="n">{{ visitas|floatformat:"g" }}</span><span class="rotulo">Visitas na sua página e promoções</span></div>
+  {% endif %}
   <div class="kpi"><span class="n">{{ impressoes|floatformat:"g" }}</span><span class="rotulo">Vezes que suas promoções apareceram</span></div>
   <div class="kpi"><span class="n">{{ qr|floatformat:"g" }}</span><span class="rotulo">Acessos pelo QR code da loja</span></div>
 </div>

@@ -111,10 +111,6 @@ def gerar_imagem(promocoes, pagina=1, total_paginas=1):
     if total_paginas > 1:
         subtitulo += f"   ({pagina}/{total_paginas})"
     d.text((58, 120), subtitulo, font=fonte(34), fill=(255, 237, 213))
-    selo, fs = "Maurilândia e Turvelândia", fonte(25, True)
-    w = d.textlength(selo, font=fs)
-    d.rounded_rectangle([LARGURA - 56 - w - 36, 64, LARGURA - 56, 114], 25, fill="white")
-    d.text((LARGURA - 56 - w - 18, 74), selo, font=fs, fill=LARANJA)
 
     # Rodapé
     RODAPE = 120

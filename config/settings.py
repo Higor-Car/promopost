@@ -52,7 +52,7 @@ CSRF_TRUSTED_ORIGINS = _env_lista("DJANGO_CSRF_TRUSTED_ORIGINS")
 SITE_URL = _env("SITE_URL", "https://achoupromos.com.br").rstrip("/")
 
 # Perfil do Achou Promo no Instagram (sem @), mostrado no rodapé.
-INSTAGRAM_SITE = _env("ACHOUPROMO_INSTAGRAM", "achoupromo").lstrip("@")
+INSTAGRAM_SITE = _env("ACHOUPROMO_INSTAGRAM", "achoupromos3").lstrip("@")
 
 # WhatsApp de quem vende os anúncios (com DDD). Se vazio, o botão "Anuncie" não aparece.
 CONTATO_WHATSAPP = re.sub(r"\D", "", _env("ACHOUPROMO_CONTATO_WHATSAPP"))
