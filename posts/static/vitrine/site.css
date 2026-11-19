@@ -147,8 +147,12 @@ main { padding-top: 16px; padding-bottom: 40px; min-height: 60vh; }
 .card { position: relative; display: flex; flex-direction: column; height: 100%; background: var(--cartao); border-radius: var(--raio); overflow: hidden; text-decoration: none; color: inherit; box-shadow: var(--sombra); transition: transform .2s var(--suave-curva), box-shadow .2s; }
 .card:hover { transform: translateY(-2px); box-shadow: var(--sombra-forte); }
 .card:active { transform: scale(.99); }
-.foto { position: relative; aspect-ratio: 1; background: var(--foto-fundo); overflow: hidden; }
-.foto img { width: 100%; height: 100%; object-fit: cover; }
+/* A arte aparece sempre inteira (quadrada, retrato ou story); o espaço que sobra
+   é preenchido pela própria imagem desfocada, em vez de cortar a arte. */
+.foto { position: relative; aspect-ratio: 4 / 5; background: var(--foto-fundo); overflow: hidden; isolation: isolate; }
+.foto img { display: block; width: 100%; height: 100%; }
+.foto .fundo { position: absolute; inset: 0; object-fit: cover; filter: blur(16px) saturate(1.15) brightness(.85); transform: scale(1.2); z-index: -1; }
+.foto .principal { position: relative; object-fit: contain; }
 .selo { position: absolute; font-size: 11.5px; font-weight: 800; padding: 4px 8px; border-radius: 8px; line-height: 1.2; }
 .selo.desconto { top: 8px; left: 8px; background: var(--vermelho); color: #fff; }
 .selo.hoje { top: 8px; right: 8px; background: rgba(28, 25, 23, .78); color: #fff; border-radius: 999px; font-weight: 700; }
@@ -249,7 +253,10 @@ main { padding-top: 16px; padding-bottom: 40px; min-height: 60vh; }
 /* ---------- Página da promoção ---------- */
 .promo-pagina { display: grid; gap: 20px; }
 @media (min-width: 860px) { .promo-pagina { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 36px; align-items: start; } }
-.promo-pagina .foto { border-radius: 20px; box-shadow: var(--sombra); }
+.promo-pagina .foto { border-radius: 20px; box-shadow: var(--sombra); aspect-ratio: auto; }
+/* Na página da promoção a arte aparece inteira, no formato original (limitada à altura da tela). */
+.promo-pagina .foto .principal { width: auto; height: auto; max-width: 100%; max-height: 78vh; margin: 0 auto; }
+@media (min-width: 860px) { .promo-pagina .foto { position: sticky; top: 90px; } }
 .promo-info { display: grid; gap: 14px; align-content: start; }
 .promo-info h1 { margin: 0; font-size: 25px; line-height: 1.15; font-weight: 800; }
 .promo-info .preco .por { font-size: 34px; }

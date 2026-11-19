@@ -12,7 +12,8 @@
 {% with url_promo=request.scheme|add:"://"|add:request.get_host|add:promo.get_absolute_url %}
 <article class="promo-pagina">
   <div class="foto">
-    <img src="{{ promo.imagem.url }}" alt="{{ promo.titulo }}">
+    <img class="fundo" src="{{ promo.imagem.url }}" alt="" aria-hidden="true">
+    <img class="principal" src="{{ promo.imagem.url }}" alt="{{ promo.titulo }}">
     {% if promo.desconto %}<span class="selo desconto">-{{ promo.desconto }}%</span>{% endif %}
   </div>
 

@@ -1,6 +1,7 @@
 <a class="card" href="{{ p.get_absolute_url }}">
   <div class="foto">
-    <img src="{{ p.imagem.url }}" alt="{{ p.titulo }}" loading="lazy">
+    <img class="fundo" src="{{ p.imagem.url }}" alt="" aria-hidden="true" loading="lazy">
+    <img class="principal" src="{{ p.imagem.url }}" alt="{{ p.titulo }}" loading="lazy">
     {% if p.desconto %}<span class="selo desconto">-{{ p.desconto }}%</span>{% endif %}
     {% if p.acaba_hoje %}<span class="selo hoje">Acaba hoje</span>{% endif %}
   </div>

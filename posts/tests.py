@@ -727,3 +727,31 @@ class TemaETextosTests(Base):
         resp = self.client.get(reverse("inicio"))
         self.assertContains(resp, "instagram.com/achoupromos3")
         self.assertNotContains(resp, "instagram.com/achoupromo\"")
+
+
+class ImagemInteiraTests(Base):
+    """Artes em formato story (9:16) não podem ser cortadas."""
+
+    def setUp(self):
+        super().setUp()
+        buf = io.BytesIO()
+        Image.new("RGB", (768, 1365), "navy").save(buf, format="JPEG")
+        self.story = SimpleUploadedFile("story.jpg", buf.getvalue(), content_type="image/jpeg")
+        self.promo = self.promocao(self.comercio("Distribuidora"), "Cerveja em story", imagem=self.story)
+
+    def test_cartao_e_pagina_mostram_a_arte_inteira(self):
+        for url in (reverse("inicio"), self.promo.get_absolute_url()):
+            resp = self.client.get(url)
+            self.assertContains(resp, 'class="principal"', msg_prefix=url)
+            self.assertContains(resp, 'class="fundo"', msg_prefix=url)
+
+    def test_imagem_do_instagram_nao_corta(self):
+        from .instagram import _foto
+
+        quadro = _foto(self.promo, 300)
+        self.assertEqual(quadro.size, (300, 300))
+        # A arte (azul-marinho) ocupa a altura toda, mas não a largura toda: as laterais são o fundo desfocado.
+        self.assertEqual(quadro.getpixel((150, 5)), quadro.getpixel((150, 295)))
+        meio = quadro.getpixel((150, 150))
+        self.assertLess(abs(meio[2] - 128), 10)
+        self.assertNotEqual(quadro.getpixel((3, 150)), meio)

@@ -61,7 +61,7 @@ Tudo é feito no **Admin**.
    funciona) e Instagram. O **slug** é o endereço da página do comércio
    (`/c/mercado-sao-jose/`) e é preenchido sozinho a partir do nome.
    Desmarcar **ativo** tira o comércio e todas as promoções dele da vitrine.
-3. **Promoções** — comércio, título, imagem (de preferência quadrada),
+3. **Promoções** — comércio, título, imagem (qualquer formato: quadrada, retrato ou story; aparece inteira, sem cortes),
    descrição e, se quiser, preço e "preço antes" (aparece riscado).
    - **Aparece a partir de** e **válida até**: a promoção só aparece na
      vitrine nesse período e some sozinha quando vence.

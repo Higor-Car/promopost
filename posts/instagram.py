@@ -9,7 +9,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.utils import timezone
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageOps
 
 LARGURA, ALTURA = 1080, 1350
 POR_IMAGEM = 3
@@ -86,7 +86,12 @@ def _foto(promo, tamanho):
     try:
         with promo.imagem.open("rb") as arquivo:
             im = ImageOps.exif_transpose(Image.open(arquivo)).convert("RGB")
-            return ImageOps.fit(im, (tamanho, tamanho), Image.LANCZOS)
+        # A arte inteira (sem cortar), sobre a própria imagem desfocada.
+        fundo = ImageOps.fit(im, (tamanho, tamanho), Image.LANCZOS).filter(ImageFilter.GaussianBlur(14))
+        fundo = ImageEnhance.Brightness(fundo).enhance(0.8)
+        frente = ImageOps.contain(im, (tamanho, tamanho), Image.LANCZOS)
+        fundo.paste(frente, ((tamanho - frente.width) // 2, (tamanho - frente.height) // 2))
+        return fundo
     except (OSError, ValueError):
         return Image.new("RGB", (tamanho, tamanho), (239, 235, 230))
 

@@ -161,7 +161,10 @@ class Promocao(models.Model):
     )
     titulo = models.CharField("título", max_length=150)
     descricao = models.TextField("descrição", blank=True)
-    imagem = models.ImageField(upload_to="promocoes/%Y/%m/")
+    imagem = models.ImageField(
+        upload_to="promocoes/%Y/%m/",
+        help_text="Qualquer formato: quadrada, retrato ou story. A arte aparece inteira no site, sem cortes.",
+    )
     preco = models.DecimalField(
         "preço", max_digits=9, decimal_places=2, null=True, blank=True,
         help_text="Opcional. Preço da promoção.",
