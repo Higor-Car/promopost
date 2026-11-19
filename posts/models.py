@@ -35,7 +35,7 @@ class Comercio(models.Model):
 
     nome = models.CharField(max_length=120)
     slug = models.SlugField(
-        max_length=140, unique=True, help_text="Endereço da página: achoupromo.com.br/c/<slug>/"
+        max_length=140, unique=True, help_text="Endereço da página do comércio no site: /c/<slug>/"
     )
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, related_name="comercios")
     cidade = models.CharField(max_length=20, choices=Cidade.choices, default=Cidade.MAURILANDIA)

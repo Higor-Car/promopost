@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Instala (ou reconfigura) o Achou Promo num servidor Ubuntu 24.04 (ex.: AWS Lightsail).
 #
-# Primeira vez:   sudo bash instalar.sh IP_DO_SERVIDOR
+# Primeira vez:   sudo bash instalar.sh IP_DO_SERVIDOR [DOMINIO]   (padrão: achoupromos.com.br)
 # Outras vezes:   sudo bash instalar.sh          (o atualizar.sh já chama este script)
 #
 # Pode rodar quantas vezes quiser: não apaga o .env, o banco, as fotos nem o certificado.
@@ -53,15 +53,19 @@ sudo -u $USUARIO $VENV/bin/pip install -q -r $APP/requirements.txt
 
 echo ">> Configuração (.env)"
 if [ ! -f $BASE/.env ]; then
-    HOSTS="achoupromo.com.br,www.achoupromo.com.br,$(IFS=,; echo "$*")"
+    IP="$1"
+    DOMINIO="${2:-achoupromos.com.br}"
     CHAVE=$(python3 -c "import secrets; print(secrets.token_urlsafe(50))")
     sed -e "s|^DJANGO_SECRET_KEY=.*|DJANGO_SECRET_KEY=$CHAVE|" \
-        -e "s|^DJANGO_ALLOWED_HOSTS=.*|DJANGO_ALLOWED_HOSTS=$HOSTS|" \
+        -e "s|__DOMINIO__|$DOMINIO|g" -e "s|__IP__|$IP|g" \
         $APP/deploy/env.exemplo > $BASE/.env
-    echo "   .env criado com uma chave nova."
+    echo "   .env criado com uma chave nova (domínio $DOMINIO)."
 else
     echo "   .env já existe, mantido."
 fi
+# O domínio vem do SITE_URL do .env (troque com deploy/trocar-dominio.sh).
+DOMINIO=$(sed -n 's|^SITE_URL=https\?://||p' $BASE/.env | cut -d/ -f1)
+echo "   Domínio: $DOMINIO"
 
 echo ">> Permissões"
 # .env: só root escreve, só o site lê.
@@ -95,7 +99,7 @@ done
 cp $APP/deploy/nginx-geral.conf $GERAL
 cp $APP/deploy/nginx-locais.conf $LOCAIS
 if [ ! -f $SITE ] || ! grep -q "managed by Certbot" $SITE; then
-    cp $APP/deploy/nginx.conf $SITE
+    sed "s|__DOMINIO__|$DOMINIO|g" $APP/deploy/nginx.conf > $SITE
 fi
 ln -sf $SITE /etc/nginx/sites-enabled/achoupromo
 rm -f /etc/nginx/sites-enabled/default

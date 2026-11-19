@@ -9,10 +9,10 @@ No servidor, tudo que muda vem de variáveis de ambiente (arquivo
 
     DJANGO_DEBUG=0
     DJANGO_SECRET_KEY=...           (obrigatório quando DEBUG=0)
-    DJANGO_ALLOWED_HOSTS=achoupromo.com.br,www.achoupromo.com.br
+    DJANGO_ALLOWED_HOSTS=achoupromos.com.br,www.achoupromos.com.br
     DJANGO_HTTPS=1                  (depois que o certificado estiver instalado)
     DJANGO_DB_PATH, DJANGO_MEDIA_ROOT, DJANGO_STATIC_ROOT
-    SITE_URL=https://achoupromo.com.br
+    SITE_URL=https://achoupromos.com.br
 """
 
 import os
@@ -48,7 +48,7 @@ ALLOWED_HOSTS = _env_lista("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1" if DEBU
 CSRF_TRUSTED_ORIGINS = _env_lista("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 # Endereço público do site (usado nos QR codes dos comércios).
-SITE_URL = _env("SITE_URL", "https://achoupromo.com.br").rstrip("/")
+SITE_URL = _env("SITE_URL", "https://achoupromos.com.br").rstrip("/")
 
 
 INSTALLED_APPS = [

@@ -136,16 +136,27 @@ do site (útil quando algo dá erro).
 
 ### Domínio e HTTPS
 
-1. Registre `achoupromo.com.br` no [Registro.br](https://registro.br).
+O domínio do site é **achoupromos.com.br** (o `achoupromo.com.br`, sem "s",
+já tinha dono). Ele fica configurado em um lugar só: o `SITE_URL` do `.env`
+do servidor.
+
+1. Registre o domínio no [Registro.br](https://registro.br).
 2. No Registro.br, em **DNS → Editar zona**, crie dois registros do tipo
-   **A**: um para `achoupromo.com.br` e outro para `www.achoupromo.com.br`,
-   os dois apontando para o **IP fixo** do servidor (aparece no console do
-   Lightsail).
+   **A**: um com o nome em branco (o próprio domínio) e outro com o nome
+   `www`, os dois apontando para o **IP fixo** do servidor (aparece no
+   console do Lightsail).
 3. Quando o endereço já abrir o site (pode levar algumas horas), instale o
    certificado HTTPS, grátis e renovado sozinho:
 
 ```bash
 sudo bash /srv/achoupromo/app/deploy/https.sh seu-email@exemplo.com
+```
+
+Para trocar de domínio no futuro (ex.: se conseguir um nome melhor), rode o
+comando abaixo, aponte o DNS do domínio novo e rode o `https.sh` de novo:
+
+```bash
+sudo bash /srv/achoupromo/app/deploy/trocar-dominio.sh novodominio.com.br
 ```
 
 ### Instalar do zero (servidor novo)
@@ -157,7 +168,7 @@ curl -fsSL https://raw.githubusercontent.com/Higor-Car/promopost/main/deploy/ins
 ```
 
 ```bash
-sudo bash instalar.sh IP_DO_SERVIDOR
+sudo bash instalar.sh IP_DO_SERVIDOR achoupromos.com.br
 ```
 
 ## Testes
